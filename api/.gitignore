@@ -1,0 +1,6 @@
+# Ignorar o arquivo de variáveis de ambiente
+.env
+
+# Ignorar a pasta de dependências
+node_modules
+/src/generated/prisma

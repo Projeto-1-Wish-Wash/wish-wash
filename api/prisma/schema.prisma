@@ -1,0 +1,50 @@
+// Define o conector e a URL do banco de dados
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Define o gerador do Prisma Client, que criará nosso ORM
+generator client {
+  provider = "prisma-client-js"
+}
+
+// --- Nossos Modelos de Dados ---
+
+// Enum para os tipos de usuário, igual ao que criamos no SQL
+enum UserType {
+  cliente
+  proprietario
+}
+
+// Modelo para a tabela de Usuários
+model Usuario {
+  id          Int       @id @default(autoincrement())
+  nome        String
+  email       String    @unique
+  senha_hash  String
+  tipo_usuario UserType
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  // Relação: Um usuário pode ser dono de várias lavanderias
+  lavanderias Lavanderia[]
+
+  // Mapeia o nome do modelo 'Usuario' para a tabela 'usuarios' no banco
+  @@map("usuarios")
+}
+
+// Modelo para a tabela de Lavanderias
+model Lavanderia {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  endereco  String? // O '?' torna o campo opcional
+  telefone  String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relação: Uma lavanderia pertence a um único proprietário
+  proprietario    Usuario @relation(fields: [proprietario_id], references: [id])
+  proprietario_id Int
+
+  // Mapeia o nome do modelo 'Lavanderia' para a tabela 'lavanderias' no banco
+  @@map("lavanderias")
+}
