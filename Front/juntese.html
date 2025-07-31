@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscrição - WishWash</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            padding: 2rem;
+        }
+
+        header {
+            background-color: #696969;
+            padding: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        nav {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .abas {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .aba {
+            padding: 0.5rem 1rem;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .aba:hover {
+            background-color: #8d8d8d;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #696969;
+        }
+
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #696969;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            background-color: #696969;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #8d8d8d;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="abas">
+                <a href="cliente.html" class="aba">Cliente</a>
+                <a href="juntese.html" class="aba">Junte-se a nós</a>
+                <a href="comunicacao.html" class="aba">Central de Comunicação</a>
+                <a href="sobre.html" class="aba">Sobre</a>
+            </div>
+        </nav>
+    </header>
+    <h1>Inscrição para Lavanderias</h1>
+    <form action="#" method="post">
+        <label for="name">Nome da Lavanderia:</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="address">Endereço:</label>
+        <input type="text" id="address" name="address" required>
+
+        <label for="phone">Telefone:</label>
+        <input type="tel" id="phone" name="phone" required>
+
+        <label for="email">E-mail:</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="wmachine">Número de máquinas de lavar:</label>
+        <input type="wmachine" id="wmachine" name="wmachine" required>
+
+        <label for="dmachine">Número de secadoras:</label>
+        <input type="dmachine" id="dmachine" name="dmachine" required>
+
+        <label for="price">Preço por uso de máquina:</label>
+        <input type="price" id="price" name="price" required>
+
+        <label for="description">Descrição:</label>
+        <textarea id="description" name="description" rows="4" required></textarea>
+
+        <button type="submit">Enviar Inscrição</button>
+    </form>
+</body>
+</html>
