@@ -3,16 +3,19 @@ const userController = require('../controllers/userController');
 
 const router = Router();
 
-// CREATE: Criar usuário
-router.post('/', userController.createUser);
+// POST: Criar novo usuário (cadastro)
+router.post('/', userController.create);
 
-// READ: Listar todos os usuários
+// POST: Fazer login
+router.post('/login', userController.login);
+
+// GET: Listar todos os usuários
 router.get('/', userController.getAllUsers);
 
-// READ: Buscar usuário por ID
+// GET: Buscar usuário por ID
 router.get('/:id', userController.getUserById);
 
-// UPDATE: Atualizar usuário
+// PUT: Atualizar usuário
 router.put('/:id', userController.updateUser);
 
 // DELETE: Deletar usuário

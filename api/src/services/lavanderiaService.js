@@ -3,47 +3,47 @@ const prisma = require('../../prisma/client');
 
 class LavanderiaService {
   /**
-   * Cria um novo usuário proprietário e sua lavanderia em uma única transação.
+   * Creates a new owner user and their laundry in a single transaction.
    */
-  async createProprietarioComLavanderia(dadosUsuario, dadosLavanderia) {
-    const resultado = await prisma.$transaction(async (tx) => {
-      // Criptografa a senha do usuário
+  async createProprietarioComLavanderia(userData, laundryData) {
+    const result = await prisma.$transaction(async (tx) => {
+      // Encrypt user password
       const salt = await bcrypt.genSalt(10);
-      const senha_hash = await bcrypt.hash(dadosUsuario.senha, salt);
+      const senha_hash = await bcrypt.hash(userData.senha, salt);
 
-      // cria o usuário do tipo proprietario
-      // Usa 'tx' em vez de prisma para garantir que a operação
-      // faça parte da transação.
-      const novoProprietario = await tx.usuario.create({
+      // Create the owner user
+      // Use 'tx' instead of prisma to ensure the operation
+      // is part of the transaction
+      const newOwner = await tx.usuario.create({
         data: {
-          nome: dadosUsuario.nome,
-          email: dadosUsuario.email,
+          nome: userData.nome,
+          email: userData.email,
           senha_hash: senha_hash,
-          tipo_usuario: 'proprietario', // Força o tipo correto
+          tipo_usuario: 'proprietario', // Force correct type
         },
       });
 
-      // usa o ID do proprietário recém-criado para criar a lavanderia
-      const novaLavanderia = await tx.lavanderia.create({
+      // Use the newly created owner ID to create the laundry
+      const newLaundry = await tx.lavanderia.create({
         data: {
-          nome: dadosLavanderia.nome,
-          endereco: dadosLavanderia.endereco,
-          telefone: dadosLavanderia.telefone,
-          proprietario_id: novoProprietario.id, // Link com o proprietário
+          nome: laundryData.nome,
+          endereco: laundryData.endereco,
+          telefone: laundryData.telefone,
+          proprietario_id: newOwner.id, // Link with owner
         },
       });
 
-      // retorna os dados criados
-      return { proprietario: novoProprietario, lavanderia: novaLavanderia };
+      // Return created data
+      return { proprietario: newOwner, lavanderia: newLaundry };
     });
 
-    // O Prisma garante que se qualquer passo acima falhar, tudo é desfeito rollback
-    return resultado;
+    // Prisma ensures that if any step above fails, everything is rolled back
+    return result;
   }
 
-  // READ: Listar todas as lavanderias
+  // READ: List all laundries
   async getAllLavanderias() {
-    const lavanderias = await prisma.lavanderia.findMany({
+    const laundries = await prisma.lavanderia.findMany({
       include: {
         proprietario: {
           select: {
@@ -54,12 +54,12 @@ class LavanderiaService {
         },
       },
     });
-    return lavanderias;
+    return laundries;
   }
 
-  // READ: Buscar lavanderia por ID
+  // READ: Find laundry by ID
   async getLavanderiaById(id) {
-    const lavanderia = await prisma.lavanderia.findUnique({
+    const laundry = await prisma.lavanderia.findUnique({
       where: { id: parseInt(id) },
       include: {
         proprietario: {
@@ -72,12 +72,12 @@ class LavanderiaService {
         },
       },
     });
-    return lavanderia;
+    return laundry;
   }
 
-  // READ: Buscar lavanderias por proprietário
+  // READ: Find laundries by owner
   async getLavanderiasByProprietario(proprietarioId) {
-    const lavanderias = await prisma.lavanderia.findMany({
+    const laundries = await prisma.lavanderia.findMany({
       where: { proprietario_id: parseInt(proprietarioId) },
       include: {
         proprietario: {
@@ -89,18 +89,18 @@ class LavanderiaService {
         },
       },
     });
-    return lavanderias;
+    return laundries;
   }
 
-  // UPDATE: Atualizar lavanderia
+  // UPDATE: Update laundry
   async updateLavanderia(id, { nome, endereco, telefone }) {
     const dataToUpdate = {};
     
     if (nome) dataToUpdate.nome = nome;
-    if (endereco !== undefined) dataToUpdate.endereco = endereco; // permite string vazia
-    if (telefone !== undefined) dataToUpdate.telefone = telefone; // permite string vazia
+    if (endereco !== undefined) dataToUpdate.endereco = endereco; // allows empty string
+    if (telefone !== undefined) dataToUpdate.telefone = telefone; // allows empty string
 
-    const lavanderiaAtualizada = await prisma.lavanderia.update({
+    const updatedLaundry = await prisma.lavanderia.update({
       where: { id: parseInt(id) },
       data: dataToUpdate,
       include: {
@@ -114,13 +114,13 @@ class LavanderiaService {
       },
     });
 
-    return lavanderiaAtualizada;
+    return updatedLaundry;
   }
 
-  // DELETE: Deletar lavanderia
+  // DELETE: Delete laundry
   async deleteLavanderia(id) {
-    // Verifica se a lavanderia existe
-    const lavanderia = await prisma.lavanderia.findUnique({
+    // Check if laundry exists
+    const laundry = await prisma.lavanderia.findUnique({
       where: { id: parseInt(id) },
       include: {
         proprietario: {
@@ -133,11 +133,11 @@ class LavanderiaService {
       },
     });
 
-    if (!lavanderia) {
-      throw new Error('Lavanderia não encontrada');
+    if (!laundry) {
+      throw new Error('Laundry not found');
     }
 
-    const lavanderiaDeletada = await prisma.lavanderia.delete({
+    const deletedLaundry = await prisma.lavanderia.delete({
       where: { id: parseInt(id) },
       include: {
         proprietario: {
@@ -150,7 +150,7 @@ class LavanderiaService {
       },
     });
 
-    return lavanderiaDeletada;
+    return deletedLaundry;
   }
 }
 

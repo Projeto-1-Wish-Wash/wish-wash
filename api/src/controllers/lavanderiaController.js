@@ -1,106 +1,228 @@
 const lavanderiaService = require('../services/lavanderiaService');
 
 class LavanderiaController {
+  /**
+   * POST /api/lavanderias - Create owner and laundry
+   */
   async create(req, res) {
-    // dados do usuário e da lavanderia
-    const { dadosUsuario, dadosLavanderia } = req.body;
-
-    // Validação de entrada
-    if (!dadosUsuario || !dadosLavanderia) {
-      return res.status(400).json({ error: 'Estrutura de dados inválida. São necessários "dadosUsuario" e "dadosLavanderia".' });
-    }
-    if (!dadosUsuario.nome || !dadosUsuario.email || !dadosUsuario.senha || !dadosLavanderia.nome) {
-        return res.status(400).json({ error: 'Campos obrigatórios faltando.' });
-    }
-
     try {
-      const resultado = await lavanderiaService.createProprietarioComLavanderia(
+      const { dadosUsuario, dadosLavanderia } = req.body;
+
+      // User data validation
+      if (!dadosUsuario || !dadosUsuario.nome || !dadosUsuario.email || !dadosUsuario.senha) {
+        return res.status(400).json({
+          error: 'Owner data is required: name, email and password'
+        });
+      }
+
+      // Laundry data validation
+      if (!dadosLavanderia || !dadosLavanderia.nome) {
+        return res.status(400).json({
+          error: 'Laundry name is required'
+        });
+      }
+
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(dadosUsuario.email)) {
+        return res.status(400).json({
+          error: 'Email must have a valid format'
+        });
+      }
+
+      // Password validation
+      if (dadosUsuario.senha.length < 6) {
+        return res.status(400).json({
+          error: 'Password must be at least 6 characters long'
+        });
+      }
+
+      const result = await lavanderiaService.createProprietarioComLavanderia(
         dadosUsuario,
         dadosLavanderia
       );
-      // Remove a senha do objeto de resposta
-      delete resultado.proprietario.senha_hash;
 
-      res.status(201).json(resultado);
+      res.status(201).json({
+        message: 'Owner and laundry created successfully',
+        proprietario: result.proprietario,
+        lavanderia: result.lavanderia
+      });
+
     } catch (error) {
-      if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
-        return res.status(409).json({ error: 'Este email já está cadastrado.' });
+      console.error('Error creating laundry:', error);
+
+      // Prisma specific error handling
+      if (error.code === 'P2002') {
+        return res.status(409).json({
+          error: 'Email is already in use'
+        });
       }
-      console.error(error);
-      res.status(500).json({ error: 'Erro interno do servidor ao criar lavanderia.' });
+
+      res.status(500).json({
+        error: 'Internal server error'
+      });
     }
   }
 
-  // READ: Listar todas as lavanderias
+  /**
+   * GET /api/lavanderias - List all laundries
+   */
   async getAllLavanderias(req, res) {
     try {
-      const lavanderias = await lavanderiaService.getAllLavanderias();
-      res.status(200).json(lavanderias);
+      const laundries = await lavanderiaService.getAllLavanderias();
+
+      res.status(200).json({
+        lavanderias: laundries,
+        total: laundries.length
+      });
+
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Erro interno do servidor.' });
+      console.error('Error listing laundries:', error);
+      res.status(500).json({
+        error: 'Internal server error'
+      });
     }
   }
 
-  // READ: Buscar lavanderia por ID
+  /**
+   * GET /api/lavanderias/:id - Find laundry by ID
+   */
   async getLavanderiaById(req, res) {
-    const { id } = req.params;
-
     try {
-      const lavanderia = await lavanderiaService.getLavanderiaById(id);
-      if (!lavanderia) {
-        return res.status(404).json({ error: 'Lavanderia não encontrada.' });
+      const { id } = req.params;
+
+      if (!id || isNaN(id)) {
+        return res.status(400).json({
+          error: 'Laundry ID must be a valid number'
+        });
       }
-      res.status(200).json(lavanderia);
+
+      const laundry = await lavanderiaService.getLavanderiaById(id);
+
+      if (!laundry) {
+        return res.status(404).json({
+          error: 'Laundry not found'
+        });
+      }
+
+      res.status(200).json({
+        lavanderia: laundry
+      });
+
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Erro interno do servidor.' });
+      console.error('Error finding laundry:', error);
+      res.status(500).json({
+        error: 'Internal server error'
+      });
     }
   }
 
-  // READ: Buscar lavanderias por proprietário
+  /**
+   * GET /api/lavanderias/proprietario/:proprietarioId - Find laundries by owner
+   */
   async getLavanderiasByProprietario(req, res) {
-    const { proprietarioId } = req.params;
-
     try {
-      const lavanderias = await lavanderiaService.getLavanderiasByProprietario(proprietarioId);
-      res.status(200).json(lavanderias);
+      const { proprietarioId } = req.params;
+
+      if (!proprietarioId || isNaN(proprietarioId)) {
+        return res.status(400).json({
+          error: 'Owner ID must be a valid number'
+        });
+      }
+
+      const laundries = await lavanderiaService.getLavanderiasByProprietario(proprietarioId);
+
+      res.status(200).json({
+        lavanderias: laundries,
+        total: laundries.length
+      });
+
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Erro interno do servidor.' });
+      console.error('Error finding laundries by owner:', error);
+      res.status(500).json({
+        error: 'Internal server error'
+      });
     }
   }
 
-  // UPDATE: Atualizar lavanderia
+  /**
+   * PUT /api/lavanderias/:id - Update laundry
+   */
   async updateLavanderia(req, res) {
-    const { id } = req.params;
-    const { nome, endereco, telefone } = req.body;
-
     try {
-      const lavanderiaAtualizada = await lavanderiaService.updateLavanderia(id, { nome, endereco, telefone });
-      res.status(200).json(lavanderiaAtualizada);
-    } catch (error) {
-      if (error.code === 'P2025') {
-        return res.status(404).json({ error: 'Lavanderia não encontrada.' });
+      const { id } = req.params;
+      const { nome, endereco, telefone } = req.body;
+
+      if (!id || isNaN(id)) {
+        return res.status(400).json({
+          error: 'Laundry ID must be a valid number'
+        });
       }
-      console.error(error);
-      res.status(500).json({ error: 'Erro interno do servidor.' });
+
+      // At least one field must be provided
+      if (!nome && endereco === undefined && telefone === undefined) {
+        return res.status(400).json({
+          error: 'At least one field must be provided for update'
+        });
+      }
+
+      const updatedLaundry = await lavanderiaService.updateLavanderia(id, {
+        nome,
+        endereco,
+        telefone
+      });
+
+      res.status(200).json({
+        message: 'Laundry updated successfully',
+        lavanderia: updatedLaundry
+      });
+
+    } catch (error) {
+      console.error('Error updating laundry:', error);
+
+      // Record not found error handling
+      if (error.code === 'P2025') {
+        return res.status(404).json({
+          error: 'Laundry not found'
+        });
+      }
+
+      res.status(500).json({
+        error: 'Internal server error'
+      });
     }
   }
 
-  // DELETE: Deletar lavanderia
+  /**
+   * DELETE /api/lavanderias/:id - Delete laundry
+   */
   async deleteLavanderia(req, res) {
-    const { id } = req.params;
-
     try {
-      const lavanderiaDeletada = await lavanderiaService.deleteLavanderia(id);
-      res.status(200).json({ message: 'Lavanderia deletada com sucesso.', lavanderia: lavanderiaDeletada });
-    } catch (error) {
-      if (error.message === 'Lavanderia não encontrada') {
-        return res.status(404).json({ error: 'Lavanderia não encontrada.' });
+      const { id } = req.params;
+
+      if (!id || isNaN(id)) {
+        return res.status(400).json({
+          error: 'Laundry ID must be a valid number'
+        });
       }
-      console.error(error);
-      res.status(500).json({ error: 'Erro interno do servidor.' });
+
+      const deletedLaundry = await lavanderiaService.deleteLavanderia(id);
+
+      res.status(200).json({
+        message: 'Laundry deleted successfully',
+        lavanderia: deletedLaundry
+      });
+
+    } catch (error) {
+      console.error('Error deleting laundry:', error);
+
+      if (error.message === 'Lavanderia não encontrada') {
+        return res.status(404).json({ error: 'Laundry not found' });
+      }
+
+      res.status(500).json({
+        error: 'Internal server error'
+      });
     }
   }
 }

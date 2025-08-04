@@ -1,84 +1,167 @@
 const bcrypt = require('bcryptjs');
-
+const jwt = require('jsonwebtoken');
 const prisma = require('../../prisma/client');
 
 class UserService {
-  async createUser({ nome, email, senha, tipo_usuario }) {
+  /**
+   * Creates a new user (client or owner)
+   * @param {Object} userData - User data {nome, email, senha, tipo_usuario}
+   * @returns {Promise<Object>} - Created user (without password)
+   */
+  async createUser(userData) {
+    const { nome, email, senha, tipo_usuario = 'cliente' } = userData;
+
+    // Check if email already exists
+    const existingUser = await prisma.usuario.findUnique({
+      where: { email }
+    });
+
+    if (existingUser) {
+      throw new Error('Email is already in use');
+    }
+
+    // Encrypt password
     const salt = await bcrypt.genSalt(10);
     const senha_hash = await bcrypt.hash(senha, salt);
 
-    // Prisma Client para criar o usuário
-    const novoUsuario = await prisma.usuario.create({
+    // Create user
+    const newUser = await prisma.usuario.create({
       data: {
         nome,
         email,
         senha_hash,
-        tipo_usuario,
+        tipo_usuario
       },
-      // Seleciona quais campos retornar (para não vazar a senha_hash)
       select: {
         id: true,
         nome: true,
         email: true,
         tipo_usuario: true,
-      },
+        createdAt: true
+      }
     });
 
-    return novoUsuario;
+    return newUser;
   }
 
-  // READ: Listar todos os usuários
-  async getAllUsers() {
-    const usuarios = await prisma.usuario.findMany({
-      select: {
-        id: true,
-        nome: true,
-        email: true,
-        tipo_usuario: true,
-        createdAt: true,
-      },
+  /**
+   * Authenticates a user and returns a JWT token
+   * @param {string} email - User email
+   * @param {string} password - User password
+   * @returns {Promise<Object>} - Token and user data
+   */
+  async loginUser(email, password) {
+    // Find user by email
+    const user = await prisma.usuario.findUnique({
+      where: { email }
     });
-    return usuarios;
+
+    if (!user) {
+      throw new Error('Invalid credentials');
+    }
+
+    // Verify password
+    const validPassword = await bcrypt.compare(password, user.senha_hash);
+    if (!validPassword) {
+      throw new Error('Invalid credentials');
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        userId: user.id, 
+        email: user.email,
+        tipo_usuario: user.tipo_usuario 
+      },
+      process.env.JWT_SECRET || 'wishwash_secret_key',
+      { expiresIn: '24h' }
+    );
+
+    // Return data without password
+    const { senha_hash, ...userWithoutPassword } = user;
+
+    return {
+      token,
+      user: userWithoutPassword
+    };
   }
 
-  // READ: Buscar usuário por ID
+  /**
+   * Find user by ID
+   * @param {number} id - User ID
+   * @returns {Promise<Object>} - User data
+   */
   async getUserById(id) {
-    const usuario = await prisma.usuario.findUnique({
+    const user = await prisma.usuario.findUnique({
       where: { id: parseInt(id) },
       select: {
         id: true,
         nome: true,
         email: true,
         tipo_usuario: true,
-        createdAt: true,
-        lavanderias: {
-          select: {
-            id: true,
-            nome: true,
-            endereco: true,
-            telefone: true,
-          },
-        },
-      },
+        createdAt: true
+      }
     });
-    return usuario;
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    return user;
   }
 
-  // UPDATE: Atualizar usuário
-  async updateUser(id, { nome, email, senha, tipo_usuario }) {
+  /**
+   * List all users (for administration)
+   * @returns {Promise<Array>} - List of users
+   */
+  async getAllUsers() {
+    const users = await prisma.usuario.findMany({
+      select: {
+        id: true,
+        nome: true,
+        email: true,
+        tipo_usuario: true,
+        createdAt: true
+      }
+    });
+
+    return users;
+  }
+
+  /**
+   * Updates user data
+   * @param {number} id - User ID
+   * @param {Object} updateData - Data to update
+   * @returns {Promise<Object>} - Updated user
+   */
+  async updateUser(id, updateData) {
+    const { nome, email, senha } = updateData;
     const dataToUpdate = {};
-    
+
     if (nome) dataToUpdate.nome = nome;
-    if (email) dataToUpdate.email = email;
-    if (tipo_usuario) dataToUpdate.tipo_usuario = tipo_usuario;
-    
-    // Se uma nova senha foi fornecida, hash ela
+    if (email) {
+      // Check if email is already in use by another user
+      const existingEmail = await prisma.usuario.findFirst({
+        where: { 
+          email,
+          NOT: { id: parseInt(id) }
+        }
+      });
+
+      if (existingEmail) {
+        throw new Error('Email is already in use by another user');
+      }
+
+      dataToUpdate.email = email;
+    }
+
+    // If new password provided, encrypt it
     if (senha) {
       const salt = await bcrypt.genSalt(10);
       dataToUpdate.senha_hash = await bcrypt.hash(senha, salt);
     }
 
-    const usuarioAtualizado = await prisma.usuario.update({
+    const updatedUser = await prisma.usuario.update({
       where: { id: parseInt(id) },
       data: dataToUpdate,
       select: {
@@ -86,41 +169,38 @@ class UserService {
         nome: true,
         email: true,
         tipo_usuario: true,
-        createdAt: true,
-      },
+        createdAt: true
+      }
     });
 
-    return usuarioAtualizado;
+    return updatedUser;
   }
 
-  // DELETE: Deletar usuário
+  /**
+   * Deletes a user
+   * @param {number} id - User ID
+   * @returns {Promise<Object>} - Deleted user
+   */
   async deleteUser(id) {
-    // Verifica se o usuário existe
-    const usuario = await prisma.usuario.findUnique({
-      where: { id: parseInt(id) },
-      include: { lavanderias: true },
+    const user = await prisma.usuario.findUnique({
+      where: { id: parseInt(id) }
     });
 
-    if (!usuario) {
-      throw new Error('Usuário não encontrado');
+    if (!user) {
+      throw new Error('User not found');
     }
 
-    // Se o usuário é proprietário e tem lavanderias, não pode ser deletado
-    if (usuario.tipo_usuario === 'proprietario' && usuario.lavanderias.length > 0) {
-      throw new Error('Não é possível deletar proprietário que possui lavanderias');
-    }
-
-    const usuarioDeletado = await prisma.usuario.delete({
+    const deletedUser = await prisma.usuario.delete({
       where: { id: parseInt(id) },
       select: {
         id: true,
         nome: true,
         email: true,
-        tipo_usuario: true,
-      },
+        tipo_usuario: true
+      }
     });
 
-    return usuarioDeletado;
+    return deletedUser;
   }
 }
 

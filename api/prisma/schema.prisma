@@ -1,6 +1,6 @@
 // Define o conector e a URL do banco de dados
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
