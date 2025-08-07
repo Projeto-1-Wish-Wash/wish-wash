@@ -7,6 +7,7 @@ import CreateLaundry from './pages/CreateLaundry/CreateLaundry';
 import Dashboard from './pages/Dashboard/Dashboard';
 import Login from './pages/Login/Login';
 import SignUp from './pages/SignUp/SignUp';
+import Map from './pages/Map/Map';
 
 // Helper para verificar se o usuário está autenticado
 const isAuthenticated = () => {
@@ -33,6 +34,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/create-laundry" element={<CreateLaundry />} />
+          <Route path="/map" element={<Map />} />
           
           {/* Rotas Privadas */}
           <Route 
