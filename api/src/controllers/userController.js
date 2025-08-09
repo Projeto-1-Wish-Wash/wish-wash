@@ -1,4 +1,5 @@
 const userService = require('../services/userService');
+const { createUserSchema, loginSchema, updateUserSchema } = require('../validations/userValidation');
 
 class UserController {
   /**
@@ -6,36 +7,15 @@ class UserController {
    */
   async create(req, res) {
     try {
-      const { nome, email, senha, tipo_usuario } = req.body;
+      const { body } = req;
 
-      // Basic validation
-      if (!nome || !email || !senha) {
-        return res.status(400).json({
-          error: 'Name, email and password are required'
-        });
+      // Validate the request body with Joi
+      const { error } = createUserSchema.validate(body);
+      if (error) {
+        return res.status(400).json({ error: error.details[0].message });
       }
 
-      // Email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        return res.status(400).json({
-          error: 'Email must have a valid format'
-        });
-      }
-
-      // Password validation
-      if (senha.length < 6) {
-        return res.status(400).json({
-          error: 'Password must be at least 6 characters long'
-        });
-      }
-
-      const newUser = await userService.createUser({
-        nome,
-        email,
-        senha,
-        tipo_usuario
-      });
+      const newUser = await userService.createUser(body);
 
       res.status(201).json({
         message: 'User created successfully',
@@ -60,15 +40,15 @@ class UserController {
    */
   async login(req, res) {
     try {
-      const { email, password } = req.body;
-
-      // Basic validation
-      if (!email || !password) {
-        return res.status(400).json({
-          error: 'Email and password are required'
-        });
+      const { body } = req;
+      
+      // Validate the request body with Joi
+      const { error } = loginSchema.validate(body);
+      if (error) {
+        return res.status(400).json({ error: error.details[0].message });
       }
 
+      const { email, password } = body;
       const result = await userService.loginUser(email, password);
 
       res.status(200).json({
@@ -148,7 +128,7 @@ class UserController {
   async updateUser(req, res) {
     try {
       const { id } = req.params;
-      const { nome, email, senha } = req.body;
+      const { body } = req;
 
       if (!id || isNaN(id)) {
         return res.status(400).json({
@@ -156,28 +136,13 @@ class UserController {
         });
       }
 
-      // Email validation if provided
-      if (email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-          return res.status(400).json({
-            error: 'Email must have a valid format'
-          });
-        }
+      // Validate the request body with Joi
+      const { error } = updateUserSchema.validate(body);
+      if (error) {
+        return res.status(400).json({ error: error.details[0].message });
       }
 
-      // Password validation if provided
-      if (senha && senha.length < 6) {
-        return res.status(400).json({
-          error: 'Password must be at least 6 characters long'
-        });
-      }
-
-      const updatedUser = await userService.updateUser(id, {
-        nome,
-        email,
-        senha
-      });
+      const updatedUser = await userService.updateUser(id, body);
 
       res.status(200).json({
         message: 'User updated successfully',

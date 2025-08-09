@@ -1,4 +1,5 @@
 const lavanderiaService = require('../services/lavanderiaService');
+const { createLavanderiaSchema, updateLavanderiaSchema } = require('../validations/lavanderiaValidation');
 
 class LavanderiaController {
   /**
@@ -6,36 +7,15 @@ class LavanderiaController {
    */
   async create(req, res) {
     try {
-      const { dadosUsuario, dadosLavanderia } = req.body;
+      const { body } = req;
 
-      // User data validation
-      if (!dadosUsuario || !dadosUsuario.nome || !dadosUsuario.email || !dadosUsuario.senha) {
-        return res.status(400).json({
-          error: 'Owner data is required: name, email and password'
-        });
+      // Validate the request body with Joi
+      const { error } = createLavanderiaSchema.validate(body);
+      if (error) {
+        return res.status(400).json({ error: error.details[0].message });
       }
 
-      // Laundry data validation
-      if (!dadosLavanderia || !dadosLavanderia.nome) {
-        return res.status(400).json({
-          error: 'Laundry name is required'
-        });
-      }
-
-      // Email validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(dadosUsuario.email)) {
-        return res.status(400).json({
-          error: 'Email must have a valid format'
-        });
-      }
-
-      // Password validation
-      if (dadosUsuario.senha.length < 6) {
-        return res.status(400).json({
-          error: 'Password must be at least 6 characters long'
-        });
-      }
+      const { dadosUsuario, dadosLavanderia } = body;
 
       const result = await lavanderiaService.createProprietarioComLavanderia(
         dadosUsuario,
@@ -151,7 +131,7 @@ class LavanderiaController {
   async updateLavanderia(req, res) {
     try {
       const { id } = req.params;
-      const { nome, endereco, telefone } = req.body;
+      const { body } = req;
 
       if (!id || isNaN(id)) {
         return res.status(400).json({
@@ -159,18 +139,13 @@ class LavanderiaController {
         });
       }
 
-      // At least one field must be provided
-      if (!nome && endereco === undefined && telefone === undefined) {
-        return res.status(400).json({
-          error: 'At least one field must be provided for update'
-        });
+      // Validate the request body with Joi
+      const { error } = updateLavanderiaSchema.validate(body);
+      if (error) {
+        return res.status(400).json({ error: error.details[0].message });
       }
 
-      const updatedLaundry = await lavanderiaService.updateLavanderia(id, {
-        nome,
-        endereco,
-        telefone
-      });
+      const updatedLaundry = await lavanderiaService.updateLavanderia(id, body);
 
       res.status(200).json({
         message: 'Laundry updated successfully',
