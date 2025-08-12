@@ -1,6 +1,6 @@
 // Define o conector e a URL do banco de dados
 datasource db {
-  provider = "sqlite"
+  provider = "postgres"
   url      = env("DATABASE_URL")
 }
 
@@ -42,7 +42,7 @@ model Lavanderia {
   createdAt DateTime @default(now()) @map("created_at")
 
   // Relação: Uma lavanderia pertence a um único proprietário
-  proprietario    Usuario @relation(fields: [proprietario_id], references: [id])
+  proprietario    Usuario @relation(fields: [proprietario_id], references: [id], onDelete: Cascade)
   proprietario_id Int
 
   // Mapeia o nome do modelo 'Lavanderia' para a tabela 'lavanderias' no banco
