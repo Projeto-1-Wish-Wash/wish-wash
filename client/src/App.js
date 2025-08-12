@@ -1,12 +1,15 @@
 import React from 'react';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import './App.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Importando as páginas
 import CreateLaundry from './pages/CreateLaundry/CreateLaundry';
 import Dashboard from './pages/Dashboard/Dashboard';
 import Login from './pages/Login/Login';
 import SignUp from './pages/SignUp/SignUp';
+import Profile from './pages/Profile/Profile';
+import LaundryProfile from './pages/LaundryProfile/LaundryProfile';
 
 // Helper para verificar se o usuário está autenticado
 const isAuthenticated = () => {
@@ -40,6 +43,22 @@ function App() {
             element={
               <PrivateRoute>
                 <Dashboard />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
+            path="/profile" 
+            element={
+              <PrivateRoute>
+                <Profile />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
+            path="/laundry-profile" 
+            element={
+              <PrivateRoute>
+                <LaundryProfile />
               </PrivateRoute>
             } 
           />
