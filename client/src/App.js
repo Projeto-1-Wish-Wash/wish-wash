@@ -1,16 +1,31 @@
 import React from 'react';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import './App.css';
+// import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Importando as páginas
 import CreateLaundry from './pages/CreateLaundry/CreateLaundry';
 import Dashboard from './pages/Dashboard/Dashboard';
+import History from './pages/History/History';
+import LaundryProfile from './pages/LaundryProfile/LaundryProfile';
 import Login from './pages/Login/Login';
+import Map from './pages/Map/Map';
+import Profile from './pages/Profile/Profile';
 import SignUp from './pages/SignUp/SignUp';
 
 // Helper para verificar se o usuário está autenticado
 const isAuthenticated = () => {
   return localStorage.getItem('token') !== null;
+};
+
+// Helper para obter o tipo de usuário
+const getUserType = () => {
+  const user = localStorage.getItem('user');
+  if (user) {
+    const userData = JSON.parse(user);
+    return userData.tipo_usuario;
+  }
+  return null;
 };
 
 // Componente de Rota Privada
@@ -23,10 +38,18 @@ function App() {
     <Router>
       <div className="App">
         <Routes>
-          {/* Rota padrão redireciona para o dashboard se logado, senão para o login */}
+          {/* Rota padrão redireciona baseado no tipo de usuário */}
           <Route 
             path="/" 
-            element={isAuthenticated() ? <Navigate replace to="/dashboard" /> : <Navigate replace to="/login" />} 
+            element={
+              isAuthenticated() ? (
+                getUserType() === 'proprietario' ? 
+                  <Navigate replace to="/laundry-profile" /> : 
+                  <Navigate replace to="/map" />
+              ) : (
+                <Navigate replace to="/login" />
+              )
+            } 
           />
           
           {/* Rotas Públicas */}
@@ -40,6 +63,38 @@ function App() {
             element={
               <PrivateRoute>
                 <Dashboard />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
+            path="/map" 
+            element={
+              <PrivateRoute>
+                <Map />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
+            path="/history" 
+            element={
+              <PrivateRoute>
+                <History />
+              </PrivateRoute>
+            } 
+          />
+           <Route 
+            path="/profile" 
+            element={
+              <PrivateRoute>
+                <Profile />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
+            path="/laundry-profile" 
+            element={
+              <PrivateRoute>
+                <LaundryProfile />
               </PrivateRoute>
             } 
           />

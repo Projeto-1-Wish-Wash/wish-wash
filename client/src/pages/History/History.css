@@ -1,0 +1,170 @@
+/* Estilos para a tela de histórico de lavagens */
+.history-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  position: relative; /* --- ALTERADO: Essencial para o botão funcionar --- */
+}
+
+/* --- NOVO: Estilos para o botão de fechar --- */
+.close-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  border: none;
+  background-color: #f0f0f0;
+  color: #555;
+  font-size: 22px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-button:hover {
+  background-color: #e0e0e0;
+  transform: scale(1.1) rotate(90deg);
+}
+/* --- FIM DOS ESTILOS NOVOS --- */
+
+
+.history-container h1 {
+  color: #333;
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 2rem;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.history-item {
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.history-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.history-item h2 {
+  color: #2c5aa0;
+  margin: 0 0 15px 0;
+  font-size: 1.3rem;
+}
+
+.history-item p {
+  margin: 8px 0;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.history-item p strong {
+  color: #333;
+  font-weight: 600;
+}
+
+/* --- NOVO: Estilos opcionais para valor e status (combinam com o JS anterior) --- */
+.item-valor {
+  font-weight: bold;
+  font-size: 1.1em;
+  text-align: right;
+  color: #16a34a; /* Verde para dar destaque */
+}
+
+.status-completed {
+  color: #16a34a;
+  font-weight: bold;
+}
+/* --- FIM DOS ESTILOS OPCIONAIS --- */
+
+/* Responsividade para dispositivos móveis */
+@media (max-width: 768px) {
+  .history-container {
+    padding: 15px;
+  }
+  
+  .close-button { /* Ajuste do botão para telas menores */
+    top: 15px;
+    right: 15px;
+  }
+
+  .history-container h1 {
+    font-size: 1.6rem;
+    margin-bottom: 20px;
+  }
+  
+  .history-item {
+    padding: 15px;
+  }
+  
+  .history-item h2 {
+    font-size: 1.1rem;
+  }
+  
+  .history-item p {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .history-container {
+    padding: 10px;
+  }
+  
+  .history-container h1 {
+    font-size: 1.4rem;
+  }
+  
+  .history-item {
+    padding: 12px;
+  }
+  
+  .history-item h2 {
+    font-size: 1rem;
+  }
+  
+  .history-item p {
+    font-size: 0.85rem;
+    margin: 6px 0;
+  }
+}
+
+/* Os seus estilos de estado de carregamento e erro já são ótimos e não precisam de mudança */
+/* Estado de carregamento */
+.loading-message {
+  text-align: center;
+  padding: 50px 20px;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+/* Estado de erro */
+.error-message {
+  text-align: center;
+  padding: 50px 20px;
+  color: #d32f2f;
+  font-size: 1.1rem;
+}
+
+/* Mensagem quando não há histórico */
+.history-container p {
+  text-align: center;
+  color: #666;
+  font-size: 1.1rem;
+  margin-top: 50px;
+}

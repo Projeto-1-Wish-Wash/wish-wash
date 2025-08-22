@@ -1,6 +1,6 @@
 // Define o conector e a URL do banco de dados
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -9,12 +9,19 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// --- Nossos Modelos de Dados ---
+// --- Modelos de Dados ---
 
-// Enum para os tipos de usuário, igual ao que criamos no SQL
+// Enum para os tipos de usuário
 enum UserType {
   cliente
   proprietario
+}
+
+// Enum para os status das máquinas
+enum StatusMaquina {
+  disponivel
+  em_uso
+  manutencao
 }
 
 // Modelo para a tabela de Usuários
@@ -24,6 +31,9 @@ model Usuario {
   email       String    @unique
   senha_hash  String
   tipo_usuario UserType
+  endereco    String?   // Endereço completo do usuário
+  latitude    Float?    // Coordenada de latitude
+  longitude   Float?    // Coordenada de longitude
   createdAt   DateTime  @default(now()) @map("created_at")
 
   // Relação: Um usuário pode ser dono de várias lavanderias
@@ -37,14 +47,41 @@ model Usuario {
 model Lavanderia {
   id        Int      @id @default(autoincrement())
   nome      String
-  endereco  String? // O '?' torna o campo opcional
+  endereco  String?  // Endereço completo da lavanderia
   telefone  String?
+  latitude  Float?   // Coordenada de latitude
+  longitude Float?   // Coordenada de longitude
+  horario   String?  // Horário de funcionamento
+  avaliacao Float?   // Avaliação média (0-5)
+  servicos  String?  // Serviços oferecidos (formato JSON string)
   createdAt DateTime @default(now()) @map("created_at")
 
   // Relação: Uma lavanderia pertence a um único proprietário
   proprietario    Usuario @relation(fields: [proprietario_id], references: [id])
   proprietario_id Int
 
+  // Relação: Uma lavanderia pode ter várias máquinas
+  maquinas MaquinaDeLavar[]
+
   // Mapeia o nome do modelo 'Lavanderia' para a tabela 'lavanderias' no banco
   @@map("lavanderias")
+}
+
+// Modelo para a tabela de Máquinas de Lavar
+model MaquinaDeLavar {
+  id            Int           @id @default(autoincrement())
+  nome          String        // Ex: "Máquina 01", "Máquina 02"
+  status        StatusMaquina @default(disponivel)
+  capacidade    String?       // Ex: "8kg", "12kg"
+  valor_lavagem Float?        // Valor em R$ para usar a máquina
+  observacoes   String?       // Observações sobre a máquina
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  // Relação: Uma máquina pertence a uma lavanderia
+  lavanderia    Lavanderia @relation(fields: [lavanderia_id], references: [id], onDelete: Cascade)
+  lavanderia_id Int
+
+  // Mapeia o nome do modelo para a tabela no banco
+  @@map("maquinas_de_lavar")
 }

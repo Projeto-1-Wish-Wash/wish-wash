@@ -5,11 +5,11 @@ const prisma = require('../../prisma/client');
 class UserService {
   /**
    * Creates a new user (client or owner)
-   * @param {Object} userData - User data {nome, email, senha, tipo_usuario}
+   * @param {Object} userData - User data {nome, email, senha, endereco, latitude, longitude, tipo_usuario}
    * @returns {Promise<Object>} - Created user (without password)
    */
   async createUser(userData) {
-    const { nome, email, senha, tipo_usuario = 'cliente' } = userData;
+    const { nome, email, senha, endereco, latitude, longitude, tipo_usuario = 'cliente' } = userData;
 
     // Check if email already exists
     const existingUser = await prisma.usuario.findUnique({
@@ -30,12 +30,18 @@ class UserService {
         nome,
         email,
         senha_hash,
+        endereco,
+        latitude,
+        longitude,
         tipo_usuario
       },
       select: {
         id: true,
         nome: true,
         email: true,
+        endereco: true,
+        latitude: true,
+        longitude: true,
         tipo_usuario: true,
         createdAt: true
       }
@@ -53,7 +59,18 @@ class UserService {
   async loginUser(email, password) {
     // Find user by email
     const user = await prisma.usuario.findUnique({
-      where: { email }
+      where: { email },
+      select: {
+        id: true,
+        nome: true,
+        email: true,
+        senha_hash: true,
+        endereco: true,
+        latitude: true,
+        longitude: true,
+        tipo_usuario: true,
+        createdAt: true
+      }
     });
 
     if (!user) {
@@ -98,6 +115,9 @@ class UserService {
         id: true,
         nome: true,
         email: true,
+        endereco: true,
+        latitude: true,
+        longitude: true,
         tipo_usuario: true,
         createdAt: true
       }
@@ -120,6 +140,9 @@ class UserService {
         id: true,
         nome: true,
         email: true,
+        endereco: true,
+        latitude: true,
+        longitude: true,
         tipo_usuario: true,
         createdAt: true
       }
@@ -135,10 +158,13 @@ class UserService {
    * @returns {Promise<Object>} - Updated user
    */
   async updateUser(id, updateData) {
-    const { nome, email, senha } = updateData;
+    const { nome, email, senha, endereco, latitude, longitude } = updateData;
     const dataToUpdate = {};
 
     if (nome) dataToUpdate.nome = nome;
+    if (endereco !== undefined) dataToUpdate.endereco = endereco;
+    if (latitude !== undefined) dataToUpdate.latitude = latitude;
+    if (longitude !== undefined) dataToUpdate.longitude = longitude;
     if (email) {
       // Check if email is already in use by another user
       const existingEmail = await prisma.usuario.findFirst({
@@ -168,6 +194,9 @@ class UserService {
         id: true,
         nome: true,
         email: true,
+        endereco: true,
+        latitude: true,
+        longitude: true,
         tipo_usuario: true,
         createdAt: true
       }

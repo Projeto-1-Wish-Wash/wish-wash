@@ -151,7 +151,7 @@ class LavanderiaController {
   async updateLavanderia(req, res) {
     try {
       const { id } = req.params;
-      const { nome, endereco, telefone } = req.body;
+      const { nome, endereco, telefone, horario, servicos, avaliacao, latitude, longitude } = req.body;
 
       if (!id || isNaN(id)) {
         return res.status(400).json({
@@ -160,7 +160,9 @@ class LavanderiaController {
       }
 
       // At least one field must be provided
-      if (!nome && endereco === undefined && telefone === undefined) {
+      if (!nome && endereco === undefined && telefone === undefined && 
+          horario === undefined && servicos === undefined && avaliacao === undefined &&
+          latitude === undefined && longitude === undefined) {
         return res.status(400).json({
           error: 'At least one field must be provided for update'
         });
@@ -169,7 +171,12 @@ class LavanderiaController {
       const updatedLaundry = await lavanderiaService.updateLavanderia(id, {
         nome,
         endereco,
-        telefone
+        telefone,
+        horario,
+        servicos,
+        avaliacao,
+        latitude,
+        longitude
       });
 
       res.status(200).json({

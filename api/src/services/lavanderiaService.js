@@ -12,13 +12,14 @@ class LavanderiaService {
       const senha_hash = await bcrypt.hash(userData.senha, salt);
 
       // Create the owner user
-      // Use 'tx' instead of prisma to ensure the operation
-      // is part of the transaction
       const newOwner = await tx.usuario.create({
         data: {
           nome: userData.nome,
           email: userData.email,
           senha_hash: senha_hash,
+          endereco: userData.endereco,
+          latitude: userData.latitude,
+          longitude: userData.longitude,
           tipo_usuario: 'proprietario', // Force correct type
         },
       });
@@ -29,6 +30,11 @@ class LavanderiaService {
           nome: laundryData.nome,
           endereco: laundryData.endereco,
           telefone: laundryData.telefone,
+          horario: laundryData.horario,
+          servicos: laundryData.servicos,
+          latitude: laundryData.latitude,
+          longitude: laundryData.longitude,
+          avaliacao: 0, // Iniciar com avaliação 0
           proprietario_id: newOwner.id, // Link with owner
         },
       });
@@ -93,12 +99,17 @@ class LavanderiaService {
   }
 
   // UPDATE: Update laundry
-  async updateLavanderia(id, { nome, endereco, telefone }) {
+  async updateLavanderia(id, { nome, endereco, telefone, horario, servicos, avaliacao, latitude, longitude }) {
     const dataToUpdate = {};
     
     if (nome) dataToUpdate.nome = nome;
     if (endereco !== undefined) dataToUpdate.endereco = endereco; // allows empty string
     if (telefone !== undefined) dataToUpdate.telefone = telefone; // allows empty string
+    if (horario !== undefined) dataToUpdate.horario = horario;
+    if (servicos !== undefined) dataToUpdate.servicos = servicos;
+    if (avaliacao !== undefined) dataToUpdate.avaliacao = avaliacao;
+    if (latitude !== undefined) dataToUpdate.latitude = latitude;
+    if (longitude !== undefined) dataToUpdate.longitude = longitude;
 
     const updatedLaundry = await prisma.lavanderia.update({
       where: { id: parseInt(id) },

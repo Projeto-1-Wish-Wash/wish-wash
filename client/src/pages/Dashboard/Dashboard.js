@@ -1,8 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user'));
+
+  // Função para fechar e voltar ao mapa
+  const handleClose = () => {
+    navigate('/map');
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -10,27 +17,45 @@ const Dashboard = () => {
     window.location.href = '/login'; // Force redirect and page refresh
   };
 
+  // Hook para lidar com o redirecionamento de forma correta
+  useEffect(() => {
+    if (!user) {
+      const timer = setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+      
+      // Limpa o timer se o componente for desmontado
+      return () => clearTimeout(timer);
+    }
+  }, [user, navigate]);
+
+
   if (!user) {
     return (
       <div className="dashboard-container">
-        <p>You are not logged in. Redirecting...</p>
-        {/* Add redirect if user accesses directly */}
-        {setTimeout(() => (window.location.href = '/login'), 2000)}
+        {/* O botão é incluído aqui também para consistência */}
+        <button onClick={handleClose} className="close-button">&times;</button>
+        <p>Você não está logado. Redirecionando...</p>
       </div>
     );
   }
 
   return (
     <div className="dashboard-container">
+      {/*Botão para fechar a tela */}
+      <button onClick={handleClose} className="close-button">
+        &times;
+      </button>
+
       <div className="dashboard-box">
-        <h1 className="dashboard-title">Welcome, {user.nome}!</h1>
+        <h1 className="dashboard-title">Bem-vindo, {user.nome}!</h1>
         <div className="user-info">
           <p><strong>ID:</strong> {user.id}</p>
           <p><strong>Email:</strong> {user.email}</p>
-          <p><strong>User Type:</strong> {user.tipo_usuario}</p>
+          <p><strong>Tipo de Usuário:</strong> {user.tipo_usuario}</p>
         </div>
         <button onClick={handleLogout} className="logout-button">
-          Logout
+          Sair
         </button>
       </div>
     </div>

@@ -29,9 +29,12 @@ const Login = () => {
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
-      // Navigate to dashboard and force page refresh
-      // for private route logic to work correctly
-      navigate('/dashboard');
+      // Redirecionar baseado no tipo de usuário
+      if (data.user.tipo_usuario === 'proprietario') {
+        navigate('/laundry-profile');
+      } else {
+        navigate('/map');
+      }
       window.location.reload();
 
     } catch (err) {
@@ -43,7 +46,7 @@ const Login = () => {
     <div className="login-container">
       <div className="login-box">
         <h1 className="login-title">WISH WASH</h1>
-        <p className="login-subtitle">Log In with an account to continue.</p>
+        <p className="login-subtitle">Faça login com uma conta para continuar.</p>
         
         <form onSubmit={handleLogin}>
           <div className="input-group">
@@ -58,7 +61,7 @@ const Login = () => {
           <div className="input-group">
             <input
               type="password"
-              placeholder="Password"
+              placeholder="Senha"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -68,18 +71,18 @@ const Login = () => {
           {error && <p className="error-message">{error}</p>}
           
           <button type="submit" className="login-button">
-            Log in with email
+            Log in com email
           </button>
         </form>
         
         <div className="or-separator">
-          <span>or</span>
+          <span>ou</span>
         </div>
         
         <div className="alternative-actions">
-          <p>Don't have an account? <Link to="/signup">Sign Up.</Link></p>
-          <Link to="/create-laundry" className="setup-link">Register your laundry now</Link>
-          <p className="help-link">Do you need help? <span>Chat with Support</span></p>
+          <p>Não tem uma conta? <Link to="/signup">Sign Up.</Link></p>
+          <Link to="/create-laundry" className="setup-link">Registre sua lavanderia aqui</Link>
+          <p className="help-link">Precisa de ajuda? <span>Fale com o suporte</span></p>
         </div>
       </div>
     </div>

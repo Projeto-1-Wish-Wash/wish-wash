@@ -6,7 +6,7 @@ class UserController {
    */
   async create(req, res) {
     try {
-      const { nome, email, senha, tipo_usuario } = req.body;
+      const { nome, email, senha, endereco, latitude, longitude, tipo_usuario } = req.body;
 
       // Basic validation
       if (!nome || !email || !senha) {
@@ -34,6 +34,9 @@ class UserController {
         nome,
         email,
         senha,
+        endereco,
+        latitude,
+        longitude,
         tipo_usuario
       });
 
@@ -148,7 +151,7 @@ class UserController {
   async updateUser(req, res) {
     try {
       const { id } = req.params;
-      const { nome, email, senha } = req.body;
+      const { nome, email, senha, endereco, latitude, longitude } = req.body;
 
       if (!id || isNaN(id)) {
         return res.status(400).json({
@@ -176,7 +179,10 @@ class UserController {
       const updatedUser = await userService.updateUser(id, {
         nome,
         email,
-        senha
+        senha,
+        endereco,
+        latitude,
+        longitude
       });
 
       res.status(200).json({
