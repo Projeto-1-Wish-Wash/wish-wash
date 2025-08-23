@@ -85,3 +85,14 @@ model MaquinaDeLavar {
   // Mapeia o nome do modelo para a tabela no banco
   @@map("maquinas_de_lavar")
 }
+
+// Modelo para a tabela de Solicitações de Suporte
+model TicketSuporte {
+  id          Int      @id @default(autoincrement())
+  name        String
+  email       String
+  message     String
+  createdAt   DateTime @default(now())
+
+  @@map("solicitacoes_suporte")
+}
