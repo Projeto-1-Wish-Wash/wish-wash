@@ -82,7 +82,7 @@ const Login = () => {
         <div className="alternative-actions">
           <p>Não tem uma conta? <Link to="/signup">Sign Up.</Link></p>
           <Link to="/create-laundry" className="setup-link">Registre sua lavanderia aqui</Link>
-          <p className="help-link">Precisa de ajuda? <span>Fale com o suporte</span></p>
+          <p className="help-link">Precisa de ajuda? <span><Link to ="/support"> Fale com o suporte</Link></span></p>
         </div>
       </div>
     </div>

@@ -1,0 +1,102 @@
+.support-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f8f9fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.support-content-box {
+  background: white;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 330px;
+  max-width: 400px;
+  text-align: center;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.support-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.support-icon {
+  font-size: 3rem;
+  color: #1e6dc2;
+  margin-bottom: 10px;
+}
+
+.support-title {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #1e6dc2;
+  margin: 0;
+}
+
+.support-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.support-input,
+.support-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+  max-width: 280px;
+}
+
+.support-input:focus,
+.support-textarea:focus {
+  border-color: #2d80da;
+  outline: none;
+  box-shadow: 0 0 4px rgba(45, 128, 218, 0.4);
+}
+
+.support-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.support-button {
+  background-color: #2d80da;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.support-button:hover:not(:disabled) {
+  background-color: #1e6dc2;
+}
+
+.support-button:disabled {
+  background-color: #a0c4f7;
+  cursor: not-allowed;
+}
+
+.support-back-button {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  color: #2d80da;
+  cursor: pointer;
+}
