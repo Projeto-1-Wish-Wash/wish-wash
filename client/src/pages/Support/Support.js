@@ -11,12 +11,16 @@ const Support = () => {
     mensagem: "",
   });
 
+  const [loading, setLoading] = useState(false); 
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    setLoading(true); 
 
     try {
       const res = await fetch("/api/suporte", {
@@ -34,6 +38,8 @@ const Support = () => {
       navigate("/login");
     } catch (err) {
       alert(err.message);
+    } finally {
+      setLoading(false); 
     }
   };
 
@@ -85,9 +91,9 @@ const Support = () => {
           <button
             type="submit"
             className="support-button"
-            disabled={!formData.mensagem.trim()}
+            disabled={loading || !formData.mensagem.trim()} 
           >
-            Enviar
+            {loading ? "Enviando..." : "Enviar"} 
           </button>
         </form>
       </div>
