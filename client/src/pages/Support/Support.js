@@ -47,13 +47,11 @@ const Support = () => {
           ← Voltar
         </button>
 
-        {/* Cabeçalho */}
         <div className="support-header">
           <AiOutlineMessage className="support-icon" />
           <h2 className="support-title">Falar com o Suporte</h2>
         </div>
 
-        {/* Formulário */}
         <form onSubmit={handleSubmit} className="support-form">
           <input
             type="text"
