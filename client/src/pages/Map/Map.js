@@ -400,7 +400,7 @@ const Map = () => {
         console.warn("Erro no cleanup:", error);
       }
     };
-  }, [map, lavanderias, routeMode]); // Removido lavanderiasMaquinas das dependências
+  }, [map, lavanderias, routeMode, userLocation]); // Removido lavanderiasMaquinas das dependências
 
   const handleSearch = () => {
     if (!searchTerm.trim()) return;
@@ -419,9 +419,52 @@ const Map = () => {
   };
 
   const toggleRouteMode = () => {
-    setRouteMode(!routeMode);
-    if (!routeMode) {
+    const newRouteMode = !routeMode;
+    setRouteMode(newRouteMode);
+
+    console.log("Toggling route mode from", routeMode, "to", newRouteMode);
+
+    if (newRouteMode) {
       alert("Modo rota ativado! Clique em uma lavanderia para traçar a rota.");
+    } else {
+      console.log("Desativando modo rota - removendo todas as rotas");
+
+      if (map) {
+        if (window.routePolyline) {
+          try {
+            if (map.hasLayer(window.routePolyline)) {
+              map.removeLayer(window.routePolyline);
+              console.log("Rota removida do mapa via window.routePolyline");
+            }
+            window.routePolyline = null;
+          } catch (error) {
+            console.error(
+              "Erro ao remover rota via window.routePolyline:",
+              error,
+            );
+          }
+        }
+
+        try {
+          map.eachLayer((layer) => {
+            if (layer instanceof window.L.Polyline) {
+              if (
+                layer.options &&
+                (layer.options.color === "#3b82f6" ||
+                  layer.options.color === "#ff6b6b" ||
+                  layer.options.dashArray === "10, 5")
+              ) {
+                map.removeLayer(layer);
+                console.log("Rota removida via eachLayer");
+              }
+            }
+          });
+        } catch (error) {
+          console.error("Erro ao remover rotas via eachLayer:", error);
+        }
+        window.routePolyline = null;
+      }
+      alert("Modo rota desativado! Rotas removidas do mapa.");
     }
   };
 
