@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import HistoricoService from '../../services/historicoService';
+import LavagemSimulator from '../../components/LavagemSimulator';
 import './History.css';
 
 function History() {
@@ -11,6 +13,11 @@ function History() {
   // Função para fechar e voltar ao mapa
   const handleClose = () => {
     navigate('/map');
+  };
+
+  // Função para atualizar a lista quando um novo histórico é criado
+  const handleHistoricoCriado = (novoHistorico) => {
+    setHistorico(prev => [novoHistorico, ...prev]);
   };
 
   /**
@@ -35,20 +42,11 @@ function History() {
           return;
         }
 
-        const response = await fetch(`/api/historico-lavagens/usuario/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-        const json = await response.json();
-        if (!response.ok) {
-          throw new Error(json.error || `Erro ao carregar histórico (status: ${response.status})`);
-        }
-
-        // json.historico contém a lista de registros
-        setHistorico(json.historico || []);
+        // Usa o serviço para buscar o histórico
+        const historicoData = await HistoricoService.getHistoricoByUsuario(userId, token);
+        setHistorico(historicoData);
       } catch (e) {
+        console.error('Erro ao buscar histórico:', e);
         setError(e);
       } finally {
         setLoading(false);
@@ -109,6 +107,11 @@ function History() {
         &times;
       </button>
       <h1>Histórico de Lavagens</h1>
+      
+      {/* Simulador para criar histórico de lavagens */}
+      <LavagemSimulator onHistoricoCriado={handleHistoricoCriado} />
+      
+      {/* Lista de histórico */}
       {content}
     </div>
   );
