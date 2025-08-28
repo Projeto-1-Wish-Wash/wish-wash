@@ -38,6 +38,9 @@ model Usuario {
 
   // Relação: Um usuário pode ser dono de várias lavanderias
   lavanderias Lavanderia[]
+  
+  // Relação: Um usuário pode ter várias lavagens no histórico
+  historicoLavagens HistoricoLavagem[]
 
   // Mapeia o nome do modelo 'Usuario' para a tabela 'usuarios' no banco
   @@map("usuarios")
@@ -62,6 +65,9 @@ model Lavanderia {
 
   // Relação: Uma lavanderia pode ter várias máquinas
   maquinas MaquinaDeLavar[]
+  
+  // Relação: Uma lavanderia pode ter várias lavagens no histórico
+  historicoLavagens HistoricoLavagem[]
 
   // Mapeia o nome do modelo 'Lavanderia' para a tabela 'lavanderias' no banco
   @@map("lavanderias")
@@ -81,6 +87,9 @@ model MaquinaDeLavar {
   // Relação: Uma máquina pertence a uma lavanderia
   lavanderia    Lavanderia @relation(fields: [lavanderia_id], references: [id], onDelete: Cascade)
   lavanderia_id Int
+  
+  // Relação: Uma máquina pode ter várias lavagens no histórico
+  historicoLavagens HistoricoLavagem[]
 
   // Mapeia o nome do modelo para a tabela no banco
   @@map("maquinas_de_lavar")
