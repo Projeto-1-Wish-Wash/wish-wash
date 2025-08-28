@@ -1,48 +1,61 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import HistoricoService from '../../services/historicoService';
+import LavagemSimulator from '../../components/LavagemSimulator';
 import './History.css';
 
 function History() {
-  const [laundries, setLaundries] = useState([]);
+  const [historico, setHistorico] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate(); //Inicializa o hook de navegação
+  const navigate = useNavigate();
 
   // Função para fechar e voltar ao mapa
   const handleClose = () => {
     navigate('/map');
   };
 
-  useEffect(() => {
-    const fetchLaundries = async () => {
-      try {
-        // Simulação de chamada à API
-        const response = await new Promise(resolve => setTimeout(() => {
-          resolve({
-            ok: true,
-            json: () => Promise.resolve([
-              // dados de exemplo aqui...
-              { id: 1, lavanderia: 'Lavanderia Central', data: '2025-08-10', tipo: 'Lavagem', maquina: 'Máquina 3', status: 'Concluída', valor: 15.00 },
-              { id: 2, lavanderia: 'WashMax Bodocongó', data: '2025-08-05', tipo: 'Secagem', maquina: 'Secadora 1', status: 'Concluída', valor: 10.00 },
-              { id: 3, lavanderia: 'Clean Express Catolé', data: '2025-07-28', tipo: 'Lavagem e Secagem', maquina: 'Máquina 5, Secadora 2', status: 'Concluída', valor: 25.00 },
-            ])
-          });
-        }, 1000));
+  // Função para atualizar a lista quando um novo histórico é criado
+  const handleHistoricoCriado = (novoHistorico) => {
+    setHistorico(prev => [novoHistorico, ...prev]);
+  };
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+  /**
+   * Recupera o token e o ID do usuário armazenados no localStorage.
+   * Retorna um objeto com `token` e `userId` ou valores nulos caso não exista.
+   */
+  const getUserAuthData = () => {
+    const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    const user = storedUser ? JSON.parse(storedUser) : null;
+    return { token, userId: user?.id };
+  };
+
+  // Busca o histórico de lavagens do usuário autenticado
+  useEffect(() => {
+    const fetchHistorico = async () => {
+      try {
+        const { token, userId } = getUserAuthData();
+        // Se não houver token ou usuário, redireciona para login
+        if (!token || !userId) {
+          navigate('/login');
+          return;
         }
-        const data = await response.json();
-        setLaundries(data);
+
+        // Usa o serviço para buscar o histórico
+        const historicoData = await HistoricoService.getHistoricoByUsuario(userId, token);
+        setHistorico(historicoData);
       } catch (e) {
+        console.error('Erro ao buscar histórico:', e);
         setError(e);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchLaundries();
-  }, []);
+    fetchHistorico();
+    // Dependências incluem navigate para redirecionar corretamente se token estiver ausente
+  }, [navigate]);
 
   // Lógica para renderizar o conteúdo dinamicamente
   let content;
@@ -50,21 +63,39 @@ function History() {
     content = <div className="loading-message">Carregando histórico...</div>;
   } else if (error) {
     content = <div className="error-message">Erro ao carregar histórico: {error.message}</div>;
-  } else if (laundries.length === 0) {
+  } else if (!historico || historico.length === 0) {
     content = <p>Nenhuma lavagem encontrada no histórico.</p>;
   } else {
     content = (
       <div className="history-list">
-        {laundries.map(item => (
-          <div key={item.id} className="history-item">
-            <h2>{item.lavanderia}</h2>
-            <p><strong>Data:</strong> {new Date(item.data).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</p>
-            <p><strong>Tipo:</strong> {item.tipo}</p>
-            <p><strong>Máquina(s):</strong> {item.maquina}</p>
-            <p><strong>Status:</strong> <span className="status-completed">{item.status}</span></p>
-            <p className="item-valor"><strong>Valor:</strong> R$ {item.valor.toFixed(2).replace('.', ',')}</p>
-          </div>
-        ))}
+        {historico.map(item => {
+          // Nome da lavanderia
+          const nomeLavanderia = item.lavanderia?.nome || item.lavanderia || 'Lavanderia desconhecida';
+          // Converte a data para o formato pt-BR
+          const dataFormatada = item.data ? new Date(item.data).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '';
+          // Nome da(s) máquina(s)
+          const nomeMaquina = item.maquina?.nome || item.maquina || '---';
+          // Tipo
+          const tipo = item.tipo || '---';
+          // Status
+          const status = item.status || '---';
+          // Valor formatado
+          const valorFormatado = item.valor !== null && item.valor !== undefined
+            ? item.valor.toFixed(2).replace('.', ',')
+            : null;
+          return (
+            <div key={item.id} className="history-item">
+              <h2>{nomeLavanderia}</h2>
+              <p><strong>Data:</strong> {dataFormatada}</p>
+              <p><strong>Tipo:</strong> {tipo}</p>
+              <p><strong>Máquina:</strong> {nomeMaquina}</p>
+              <p><strong>Status:</strong> <span className="status-completed">{status}</span></p>
+              {valorFormatado !== null && (
+                <p className="item-valor"><strong>Valor:</strong> R$ {valorFormatado}</p>
+              )}
+            </div>
+          );
+        })}
       </div>
     );
   }
@@ -76,6 +107,11 @@ function History() {
         &times;
       </button>
       <h1>Histórico de Lavagens</h1>
+      
+      {/* Simulador para criar histórico de lavagens */}
+      <LavagemSimulator onHistoricoCriado={handleHistoricoCriado} />
+      
+      {/* Lista de histórico */}
       {content}
     </div>
   );

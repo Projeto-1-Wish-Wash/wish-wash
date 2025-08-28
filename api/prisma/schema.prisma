@@ -38,6 +38,9 @@ model Usuario {
 
   // Relação: Um usuário pode ser dono de várias lavanderias
   lavanderias Lavanderia[]
+  
+  // Relação: Um usuário pode ter várias lavagens no histórico
+  historicoLavagens HistoricoLavagem[]
 
   // Mapeia o nome do modelo 'Usuario' para a tabela 'usuarios' no banco
   @@map("usuarios")
@@ -62,6 +65,9 @@ model Lavanderia {
 
   // Relação: Uma lavanderia pode ter várias máquinas
   maquinas MaquinaDeLavar[]
+  
+  // Relação: Uma lavanderia pode ter várias lavagens no histórico
+  historicoLavagens HistoricoLavagem[]
 
   // Mapeia o nome do modelo 'Lavanderia' para a tabela 'lavanderias' no banco
   @@map("lavanderias")
@@ -81,6 +87,9 @@ model MaquinaDeLavar {
   // Relação: Uma máquina pertence a uma lavanderia
   lavanderia    Lavanderia @relation(fields: [lavanderia_id], references: [id], onDelete: Cascade)
   lavanderia_id Int
+  
+  // Relação: Uma máquina pode ter várias lavagens no histórico
+  historicoLavagens HistoricoLavagem[]
 
   // Mapeia o nome do modelo para a tabela no banco
   @@map("maquinas_de_lavar")
@@ -95,4 +104,42 @@ model TicketSuporte {
   createdAt   DateTime @default(now())
 
   @@map("solicitacoes_suporte")
+}
+
+// Modelo para armazenar o histórico de lavagens realizadas pelos usuários.
+// Cada registro vincula um usuário a uma lavanderia e opcionalmente a uma máquina específica
+// com informações sobre o tipo de serviço executado, status, valor pago e data de realização.
+model HistoricoLavagem {
+  /// Identificador único do registro de histórico
+  id             Int              @id @default(autoincrement())
+
+  /// Relacionamento com o usuário que realizou a lavagem
+  usuario        Usuario          @relation(fields: [usuario_id], references: [id])
+  usuario_id     Int
+
+  /// Relacionamento com a lavanderia onde a lavagem ocorreu
+  lavanderia     Lavanderia       @relation(fields: [lavanderia_id], references: [id])
+  lavanderia_id  Int
+
+  /// Relacionamento opcional com a máquina utilizada; pode ser nulo caso a lavagem envolva
+  /// mais de uma máquina ou não exista controle por máquina específica.  
+  maquina        MaquinaDeLavar?  @relation(fields: [maquina_id], references: [id])
+  maquina_id     Int?
+
+  /// Data e hora em que a lavagem foi realizada
+  data           DateTime         @default(now())
+
+  /// Tipo de serviço realizado, por exemplo: "Lavagem", "Secagem", "Lavagem e Secagem"
+  tipo           String?
+
+  /// Status da lavagem (ex.: "Concluída", "Cancelada", "Em andamento")
+  status         String?
+
+  /// Valor cobrado em reais pela lavagem
+  valor          Float?
+
+  /// Data de criação do registro
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  @@map("historico_lavagens")
 }
