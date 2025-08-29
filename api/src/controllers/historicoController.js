@@ -17,8 +17,6 @@ class HistoricoController {
         lavanderia_id,
         maquina_id,
         data,
-        tipo,
-        status,
         valor
       } = req.body;
 
@@ -34,8 +32,6 @@ class HistoricoController {
         lavanderia_id,
         maquina_id,
         data,
-        tipo,
-        status,
         valor
       });
 

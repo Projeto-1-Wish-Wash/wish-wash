@@ -39,6 +39,9 @@ model Usuario {
   // Relação: Um usuário pode ser dono de várias lavanderias
   lavanderias Lavanderia[]
 
+  // Relação: Um usuário pode ter vários históricos de lavagem
+  historicos   HistoricoLavagem[]
+
   // Mapeia o nome do modelo 'Usuario' para a tabela 'usuarios' no banco
   @@map("usuarios")
 }
@@ -63,6 +66,9 @@ model Lavanderia {
   // Relação: Uma lavanderia pode ter várias máquinas
   maquinas MaquinaDeLavar[]
 
+  // Relação: Um usuário pode ter vários históricos de lavagem
+  historicos   HistoricoLavagem[]
+
   // Mapeia o nome do modelo 'Lavanderia' para a tabela 'lavanderias' no banco
   @@map("lavanderias")
 }
@@ -82,6 +88,9 @@ model MaquinaDeLavar {
   lavanderia    Lavanderia @relation(fields: [lavanderia_id], references: [id], onDelete: Cascade)
   lavanderia_id Int
 
+  // Relação: Um usuário pode ter vários históricos de lavagem
+  historicos   HistoricoLavagem[]
+
   // Mapeia o nome do modelo para a tabela no banco
   @@map("maquinas_de_lavar")
 }
@@ -99,7 +108,7 @@ model TicketSuporte {
 
 // Modelo para armazenar o histórico de lavagens realizadas pelos usuários.
 // Cada registro vincula um usuário a uma lavanderia e opcionalmente a uma máquina específica
-// com informações sobre o tipo de serviço executado, status, valor pago e data de realização.
+// com informações sobre valor pago e data/hora de realização.
 model HistoricoLavagem {
   /// Identificador único do registro de histórico
   id             Int              @id @default(autoincrement())
@@ -119,12 +128,6 @@ model HistoricoLavagem {
 
   /// Data e hora em que a lavagem foi realizada
   data           DateTime         @default(now())
-
-  /// Tipo de serviço realizado, por exemplo: "Lavagem", "Secagem", "Lavagem e Secagem"
-  tipo           String?
-
-  /// Status da lavagem (ex.: "Concluída", "Cancelada", "Em andamento")
-  status         String?
 
   /// Valor cobrado em reais pela lavagem
   valor          Float?

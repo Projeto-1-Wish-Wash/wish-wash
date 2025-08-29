@@ -13,9 +13,7 @@ class HistoricoService {
    * @param {number} historicoData.usuario_id - ID do usuário
    * @param {number} historicoData.lavanderia_id - ID da lavanderia
    * @param {number|null} historicoData.maquina_id - ID da máquina (opcional)
-   * @param {Date|string|null} historicoData.data - Data da lavagem (padrão: agora)
-   * @param {string|null} historicoData.tipo - Tipo do serviço (ex.: "Lavagem")
-   * @param {string|null} historicoData.status - Status da lavagem (ex.: "Concluída")
+   * @param {Date|string|null} historicoData.data - Data e hora da lavagem (padrão: agora)
    * @param {number|null} historicoData.valor - Valor cobrado pela lavagem
    * @returns {Promise<Object>} Registro criado
    */
@@ -24,9 +22,7 @@ class HistoricoService {
       usuario_id,
       lavanderia_id,
       maquina_id = null,
-      data = new Date(),
-      tipo = null,
-      status = null,
+      data = new Date(), // Data e hora da lavagem
       valor = null
     } = historicoData;
 
@@ -35,14 +31,14 @@ class HistoricoService {
     const parsedLavanderiaId = parseInt(lavanderia_id);
     const parsedMaquinaId = maquina_id !== null && maquina_id !== undefined ? parseInt(maquina_id) : null;
 
+   
+
     const newHistorico = await prisma.historicoLavagem.create({
       data: {
         usuario_id: parsedUsuarioId,
         lavanderia_id: parsedLavanderiaId,
         maquina_id: parsedMaquinaId,
         data: data instanceof Date ? data : new Date(data),
-        tipo,
-        status,
         valor: valor !== null && valor !== undefined ? parseFloat(valor) : null
       },
       include: {
@@ -57,6 +53,7 @@ class HistoricoService {
         }
       }
     });
+
 
     return newHistorico;
   }

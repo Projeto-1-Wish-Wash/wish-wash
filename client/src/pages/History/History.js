@@ -73,14 +73,15 @@ function History() {
         {historico.map(item => {
           // Nome da lavanderia
           const nomeLavanderia = item.lavanderia?.nome || item.lavanderia || 'Lavanderia desconhecida';
-          // Converte a data para o formato pt-BR
-          const dataFormatada = item.data ? new Date(item.data).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '';
+          // Converte a data para o formato pt-BR no fuso horário do Brasil
+          const dataFormatada = item.data ? new Date(item.data).toLocaleDateString('pt-BR', { 
+            timeZone: 'America/Sao_Paulo',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+          }) : '';
           // Nome da(s) máquina(s)
           const nomeMaquina = item.maquina?.nome || item.maquina || '---';
-          // Tipo
-          const tipo = item.tipo || '---';
-          // Status
-          const status = item.status || '---';
           // Valor formatado
           const valorFormatado = item.valor !== null && item.valor !== undefined
             ? item.valor.toFixed(2).replace('.', ',')
@@ -89,9 +90,7 @@ function History() {
             <div key={item.id} className="history-item">
               <h2>{nomeLavanderia}</h2>
               <p><strong>Data:</strong> {dataFormatada}</p>
-              <p><strong>Tipo:</strong> {tipo}</p>
               <p><strong>Máquina:</strong> {nomeMaquina}</p>
-              <p><strong>Status:</strong> <span className="status-completed">{status}</span></p>
               {valorFormatado !== null && (
                 <p className="item-valor"><strong>Valor:</strong> R$ {valorFormatado}</p>
               )}
