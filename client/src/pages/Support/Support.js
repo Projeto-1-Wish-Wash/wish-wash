@@ -65,7 +65,7 @@ const Support = () => {
     <div className="support-page">
       <div className="support-content-box">
         <button
-          onClick={() => navigate("/login")}
+          onClick={() => (isUserLoggedIn ? navigate("/map") : navigate("/login"))}
           className="support-back-button"
         >
           ← Voltar
