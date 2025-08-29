@@ -1,4 +1,5 @@
 const maquinaService = require('../services/maquinaService');
+const historicoService = require('../services/historicoService');
 
 class MaquinaController {
   /**
@@ -156,6 +157,38 @@ class MaquinaController {
       }
 
       const maquinaAtualizada = await maquinaService.updateStatusMaquina(id, status);
+
+      // Se um cliente está reservando a máquina (mudando para em_uso), criar registro no histórico
+      if (userType === 'cliente' && status === 'em_uso') {
+        try {
+          // Obter data/hora atual no fuso horário do Brasil
+          const horaLavagem = new Date();
+          
+          // Formatar para exibição no log
+          const horaFormatadaBrasil = horaLavagem.toLocaleString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit', 
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            timeZone: 'America/Sao_Paulo'
+          });
+          
+          const novoHistorico = await historicoService.createHistorico({
+            usuario_id: userIdFromToken,
+            lavanderia_id: maquina.lavanderia.id,
+            maquina_id: parseInt(id),
+            data: horaLavagem, // Data e hora da lavagem
+            valor: maquina.valor_lavagem
+          });
+          
+        } catch (historicoError) {
+          // Log detalhado do erro para debug
+          console.error('❌ Erro ao criar histórico de reserva:', historicoError);
+          console.error('📋 Stack trace:', historicoError.stack);
+        }
+      }
 
       res.status(200).json({
         message: 'Status da máquina atualizado com sucesso',
