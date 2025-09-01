@@ -4,9 +4,9 @@ import {
   Navigation,
   Route,
   Search,
-  User,
-  Zap,
+  User
 } from "lucide-react";
+import { MdSupportAgent } from "react-icons/md";
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Map.css";
@@ -835,9 +835,8 @@ const Map = () => {
       case "mapa":
         // Já estamos no mapa
         break;
-      case "lavar":
-        // Recarrega a página (refresh)
-        window.location.reload();
+      case "suporte":
+        navigate("/support")
         break;
       default:
         break;
@@ -891,7 +890,7 @@ const Map = () => {
             { id: "historico", icon: Clock, label: "Histórico" },
             { id: "perfil", icon: User, label: "Perfil" },
             { id: "mapa", icon: MapPin, label: "Mapa" },
-            { id: "lavar", icon: Zap, label: "Lavar" },
+            { id: "suporte", icon: MdSupportAgent, label: "Suporte" },
           ].map(({ id, icon: Icon, label }) => (
             <button
               key={id}
