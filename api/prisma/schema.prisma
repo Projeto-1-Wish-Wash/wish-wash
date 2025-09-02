@@ -42,6 +42,9 @@ model Usuario {
   // Relação: Um usuário pode ter vários históricos de lavagem
   historicos   HistoricoLavagem[]
 
+  // Relação: Um usuário pode fazer várias avaliações
+  avaliacoes   AvaliacaoLavanderia[]
+
   // Mapeia o nome do modelo 'Usuario' para a tabela 'usuarios' no banco
   @@map("usuarios")
 }
@@ -68,6 +71,9 @@ model Lavanderia {
 
   // Relação: Um usuário pode ter vários históricos de lavagem
   historicos   HistoricoLavagem[]
+
+  // Relação: Uma lavanderia pode ter várias avaliações
+  avaliacoes   AvaliacaoLavanderia[]
 
   // Mapeia o nome do modelo 'Lavanderia' para a tabela 'lavanderias' no banco
   @@map("lavanderias")
@@ -136,4 +142,28 @@ model HistoricoLavagem {
   createdAt      DateTime         @default(now()) @map("created_at")
 
   @@map("historico_lavagens")
+}
+
+// Modelo para armazenar as avaliações das lavanderias pelos usuários
+model AvaliacaoLavanderia {
+  id              Int      @id @default(autoincrement())
+  nota            Int      // Nota de 1 a 5 estrelas
+  comentario      String?  // Comentário opcional do usuário
+  data_avaliacao  DateTime @default(now()) @map("data_avaliacao")
+
+  // Relacionamento com o usuário que fez a avaliação
+  usuario         Usuario  @relation(fields: [usuario_id], references: [id])
+  usuario_id      Int
+
+  // Relacionamento com a lavanderia avaliada
+  lavanderia      Lavanderia @relation(fields: [lavanderia_id], references: [id])
+  lavanderia_id   Int
+
+  // Data de criação do registro
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Data de atualização do registro
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("avaliacoes_lavanderias")
 }

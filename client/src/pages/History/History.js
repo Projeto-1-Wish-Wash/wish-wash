@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './History.css';
+import AvaliacaoModal from '../../components/AvaliacaoModal';
+import avaliacaoService from '../../services/avaliacaoService';
 
 function History() {
   const [historico, setHistorico] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showAvaliacaoModal, setShowAvaliacaoModal] = useState(false);
+  const [lavanderiaParaAvaliar, setLavanderiaParaAvaliar] = useState(null);
+  const [avaliacaoExistente, setAvaliacaoExistente] = useState(null);
   const navigate = useNavigate();
 
   // Função para fechar e voltar ao mapa
@@ -59,6 +64,41 @@ function History() {
     // Dependências incluem navigate para redirecionar corretamente se token estiver ausente
   }, [navigate]);
 
+  // Abrir modal de avaliação
+  const handleAbrirAvaliacao = async (lavanderia) => {
+    try {
+      const podeAvaliar = await avaliacaoService.verificarPodeAvaliar(lavanderia.id);
+      if (podeAvaliar.data.podeAvaliar) {
+        const avaliacao = await avaliacaoService.buscarAvaliacaoUsuario(lavanderia.id);
+        setAvaliacaoExistente(avaliacao.data);
+        setLavanderiaParaAvaliar(lavanderia);
+        setShowAvaliacaoModal(true);
+      } else {
+        alert('Você só pode avaliar lavanderias que já utilizou.');
+      }
+    } catch (error) {
+      console.error('Erro ao verificar avaliação:', error);
+      alert('Erro ao verificar se pode avaliar. Tente novamente.');
+    }
+  };
+
+  const handleFecharAvaliacao = () => {
+    setShowAvaliacaoModal(false);
+    setLavanderiaParaAvaliar(null);
+    setAvaliacaoExistente(null);
+  };
+
+  const handleEnviarAvaliacao = async (dados) => {
+    try {
+      await avaliacaoService.criarAvaliacao(dados);
+      alert('Avaliação enviada com sucesso!');
+      handleFecharAvaliacao();
+    } catch (error) {
+      console.error('Erro ao enviar avaliação:', error);
+      alert('Erro ao enviar avaliação.');
+    }
+  };
+
   // Lógica para renderizar o conteúdo dinamicamente
   let content;
   if (loading) {
@@ -94,6 +134,11 @@ function History() {
               {valorFormatado !== null && (
                 <p className="item-valor"><strong>Valor:</strong> R$ {valorFormatado}</p>
               )}
+              {item.lavanderia?.id && (
+                <button className="avaliar-button" onClick={() => handleAbrirAvaliacao(item.lavanderia)}>
+                  {avaliacaoExistente ? 'Editar Avaliação' : 'Avaliar Lavanderia'}
+                </button>
+              )}
             </div>
           );
         })}
@@ -109,6 +154,16 @@ function History() {
       </button>
       <h1>Histórico de Lavagens</h1>
       {content}
+
+      {showAvaliacaoModal && lavanderiaParaAvaliar && (
+        <AvaliacaoModal
+          isOpen={showAvaliacaoModal}
+          onClose={handleFecharAvaliacao}
+          lavanderia={lavanderiaParaAvaliar}
+          onSubmit={handleEnviarAvaliacao}
+          avaliacaoExistente={avaliacaoExistente}
+        />
+      )}
     </div>
   );
 }
