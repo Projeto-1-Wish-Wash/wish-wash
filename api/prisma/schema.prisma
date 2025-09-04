@@ -132,6 +132,9 @@ model HistoricoLavagem {
   /// Valor cobrado em reais pela lavagem
   valor          Float?
 
+  /// Avaliação do usuário para esta lavanderia (1-5 estrelas). Null = não avaliado ainda
+  avaliacao_usuario Int?
+
   /// Data de criação do registro
   createdAt      DateTime         @default(now()) @map("created_at")
 

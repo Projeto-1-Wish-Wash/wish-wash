@@ -59,6 +59,93 @@ class HistoricoService {
   }
 
   /**
+   * Atualiza a avaliação de um histórico de lavagem específico.
+   *
+   * @param {number} historicoId - ID do histórico
+   * @param {number} userId - ID do usuário (para verificação de propriedade)
+   * @param {number} avaliacao - Avaliação de 1 a 5 estrelas
+   * @returns {Promise<Object>} Histórico atualizado
+   */
+  async avaliarHistorico(historicoId, userId, avaliacao) {
+    // Validar a avaliação
+    if (avaliacao < 1 || avaliacao > 5 || !Number.isInteger(avaliacao)) {
+      throw new Error('Avaliação deve ser um número inteiro entre 1 e 5');
+    }
+
+    // Verificar se o histórico existe e pertence ao usuário
+    const historico = await prisma.historicoLavagem.findFirst({
+      where: {
+        id: parseInt(historicoId),
+        usuario_id: parseInt(userId)
+      },
+      include: {
+        lavanderia: true
+      }
+    });
+
+    if (!historico) {
+      throw new Error('Histórico não encontrado ou não pertence a este usuário');
+    }
+
+    // Atualizar a avaliação no histórico
+    const historicoAtualizado = await prisma.historicoLavagem.update({
+      where: { id: parseInt(historicoId) },
+      data: { avaliacao_usuario: avaliacao },
+      include: {
+        usuario: {
+          select: { id: true, nome: true, email: true }
+        },
+        lavanderia: {
+          select: { id: true, nome: true }
+        },
+        maquina: {
+          select: { id: true, nome: true }
+        }
+      }
+    });
+
+    // Recalcular a média de avaliação da lavanderia
+    await this.recalcularAvaliacaoLavanderia(historico.lavanderia_id);
+
+    return historicoAtualizado;
+  }
+
+  /**
+   * Recalcula a avaliação média de uma lavanderia baseada nas avaliações dos usuários
+   *
+   * @param {number} lavanderiaId - ID da lavanderia
+   * @returns {Promise<void>}
+   */
+  async recalcularAvaliacaoLavanderia(lavanderiaId) {
+    // Buscar todas as avaliações válidas para esta lavanderia
+    const avaliacoes = await prisma.historicoLavagem.findMany({
+      where: {
+        lavanderia_id: parseInt(lavanderiaId),
+        avaliacao_usuario: { not: null }
+      },
+      select: { avaliacao_usuario: true }
+    });
+
+    if (avaliacoes.length === 0) {
+      // Se não há avaliações, deixar como null
+      await prisma.lavanderia.update({
+        where: { id: parseInt(lavanderiaId) },
+        data: { avaliacao: null }
+      });
+    } else {
+      // Calcular média
+      const soma = avaliacoes.reduce((acc, curr) => acc + curr.avaliacao_usuario, 0);
+      const media = parseFloat((soma / avaliacoes.length).toFixed(1));
+      
+      // Atualizar a média na lavanderia
+      await prisma.lavanderia.update({
+        where: { id: parseInt(lavanderiaId) },
+        data: { avaliacao: media }
+      });
+    }
+  }
+
+  /**
    * Retorna todos os registros de histórico de lavagem de um usuário específico.
    *
    * @param {number} usuarioId - ID do usuário

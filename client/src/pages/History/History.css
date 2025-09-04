@@ -119,3 +119,105 @@
     font-size: 1.1rem;
     margin-top: 50px;
   }
+
+  /* Estilos para avaliação */
+  .avaliacao-section {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  .avaliacao-existente p,
+  .avaliacao-pendente p {
+    margin: 0 0 8px 0;
+    color: #333;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .estrelas-display {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .estrela {
+    color: #ddd;
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+
+  .estrela.ativa {
+    color: #ffd700;
+  }
+
+  .avaliacao-texto {
+    margin-left: 8px;
+    color: #666;
+    font-size: 0.85rem;
+    font-style: italic;
+  }
+
+  .estrelas-interativas {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .estrela-btn {
+    background: none;
+    border: none;
+    color: #ddd;
+    font-size: 1.4rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.1s ease;
+    padding: 2px;
+  }
+
+  .estrela-btn:hover:not(:disabled) {
+    color: #ffd700;
+    transform: scale(1.1);
+  }
+
+  .estrela-btn:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+
+  .estrela-btn.desabilitada {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .avaliando-texto {
+    margin-left: 10px;
+    color: #2c5aa0;
+    font-size: 0.85rem;
+    font-style: italic;
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* Responsividade para avaliações */
+  @media (max-width: 480px) {
+    .avaliacao-section {
+      margin-top: 12px;
+      padding-top: 12px;
+    }
+    
+    .estrela {
+      font-size: 1.1rem;
+    }
+    
+    .estrela-btn {
+      font-size: 1.3rem;
+    }
+    
+    .avaliacao-texto, .avaliando-texto {
+      font-size: 0.8rem;
+    }
+  }

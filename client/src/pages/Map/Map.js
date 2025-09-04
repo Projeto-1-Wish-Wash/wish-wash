@@ -1,13 +1,13 @@
 import {
-  Clock,
-  MapPin,
-  Navigation,
-  Route,
-  Search,
-  User
+    Clock,
+    MapPin,
+    Navigation,
+    Route,
+    Search,
+    User
 } from "lucide-react";
-import { MdSupportAgent } from "react-icons/md";
 import React, { useEffect, useRef, useState } from "react";
+import { MdSupportAgent } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import "./Map.css";
 
@@ -23,6 +23,24 @@ const Map = () => {
   const userMarkerRef = useRef(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [lavanderiasMaquinas, setLavanderiasMaquinas] = useState({});
+
+  // Função para recarregar dados das lavanderias (útil após avaliações)
+  const recarregarLavanderias = async () => {
+    try {
+      const response = await fetch("/api/lavanderias");
+      if (response.ok) {
+        const data = await response.json();
+        const lavanderiasFiltradas =
+          data.lavanderias?.filter((l) => l.latitude && l.longitude) || [];
+        
+        if (lavanderiasFiltradas.length > 0) {
+          setLavanderias(lavanderiasFiltradas);
+        }
+      }
+    } catch (err) {
+      console.error("Erro ao recarregar lavanderias:", err);
+    }
+  };
 
   // Buscar dados do usuário logado
   useEffect(() => {
@@ -385,6 +403,7 @@ const Map = () => {
       // Expor função reservarMaquina globalmente para uso nos botões HTML
       if (typeof window !== "undefined") {
         window.reservarMaquina = reservarMaquina;
+        window.recarregarLavanderias = recarregarLavanderias;
       }
     } catch (error) {
       console.error("Erro ao adicionar marcadores das lavanderias:", error);
@@ -393,8 +412,13 @@ const Map = () => {
     return () => {
       // Cleanup: remover função global
       try {
-        if (typeof window !== "undefined" && window.reservarMaquina) {
-          delete window.reservarMaquina;
+        if (typeof window !== "undefined") {
+          if (window.reservarMaquina) {
+            delete window.reservarMaquina;
+          }
+          if (window.recarregarLavanderias) {
+            delete window.recarregarLavanderias;
+          }
         }
       } catch (error) {
         console.warn("Erro no cleanup:", error);

@@ -76,6 +76,58 @@ class HistoricoController {
       });
     }
   }
+
+  /**
+   * Atualiza a avaliação de um histórico específico do usuário.
+   * Rota: PUT /api/historico-lavagens/:id/avaliar
+   */
+  async avaliarHistorico(req, res) {
+    try {
+      const { id } = req.params;
+      const { avaliacao } = req.body;
+      const userIdFromToken = req.user?.userId;
+
+      // Validação de campos obrigatórios
+      if (!avaliacao || !Number.isInteger(avaliacao)) {
+        return res.status(400).json({
+          error: 'A avaliação deve ser um número inteiro válido'
+        });
+      }
+
+      if (avaliacao < 1 || avaliacao > 5) {
+        return res.status(400).json({
+          error: 'A avaliação deve ser entre 1 e 5 estrelas'
+        });
+      }
+
+      if (!userIdFromToken) {
+        return res.status(401).json({
+          error: 'Usuário não autenticado'
+        });
+      }
+
+      const historicoAtualizado = await historicoService.avaliarHistorico(
+        parseInt(id), 
+        userIdFromToken, 
+        avaliacao
+      );
+
+      res.status(200).json({
+        message: 'Avaliação registrada com sucesso',
+        historico: historicoAtualizado
+      });
+    } catch (error) {
+      console.error('Erro ao avaliar histórico:', error);
+      
+      if (error.message.includes('Avaliação deve ser') || error.message.includes('não encontrado')) {
+        return res.status(400).json({ error: error.message });
+      }
+
+      res.status(500).json({
+        error: 'Erro interno do servidor'
+      });
+    }
+  }
 }
 
 module.exports = new HistoricoController();

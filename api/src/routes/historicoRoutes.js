@@ -20,4 +20,11 @@ router.post('/', historicoController.createHistorico);
  */
 router.get('/usuario/:usuarioId', authenticateToken, historicoController.getHistoricoByUsuario);
 
+/**
+ * PUT /api/historico-lavagens/:id/avaliar
+ * Permite ao usuário avaliar uma lavanderia através de um histórico específico.
+ * Requer autenticação e verifica se o histórico pertence ao usuário.
+ */
+router.put('/:id/avaliar', authenticateToken, historicoController.avaliarHistorico);
+
 module.exports = router;
