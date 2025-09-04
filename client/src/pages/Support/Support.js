@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AiOutlineMessage } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 import "./Support.css";
@@ -11,7 +11,21 @@ const Support = () => {
     mensagem: "",
   });
 
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false); 
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      const userData = JSON.parse(user);
+      setFormData((prevData) => ({
+        ...prevData,
+        nome: userData.nome || "",
+        email: userData.email || "",
+      }));
+      setIsUserLoggedIn(true);
+    }
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -19,8 +33,7 @@ const Support = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    setLoading(true); 
+    setLoading(true);
 
     try {
       const res = await fetch("/api/suporte", {
@@ -35,11 +48,16 @@ const Support = () => {
 
       alert("Sua mensagem foi enviada com sucesso! Em breve entraremos em contato.");
       setFormData({ nome: "", email: "", mensagem: "" });
-      navigate("/login");
+
+      if(isUserLoggedIn){
+        navigate("/map");
+      } else{
+        navigate("/login");        
+      }
     } catch (err) {
       alert(err.message);
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
@@ -47,7 +65,7 @@ const Support = () => {
     <div className="support-page">
       <div className="support-content-box">
         <button
-          onClick={() => navigate("/login")}
+          onClick={() => (isUserLoggedIn ? navigate("/map") : navigate("/login"))}
           className="support-back-button"
         >
           ← Voltar
@@ -67,6 +85,7 @@ const Support = () => {
             className="support-input"
             placeholder="Seu nome"
             required
+            disabled={isUserLoggedIn}
           />
 
           <input
@@ -77,6 +96,7 @@ const Support = () => {
             className="support-input"
             placeholder="Seu email"
             required
+            disabled={isUserLoggedIn}
           />
 
           <textarea
@@ -91,9 +111,9 @@ const Support = () => {
           <button
             type="submit"
             className="support-button"
-            disabled={loading || !formData.mensagem.trim()} 
+            disabled={loading || !formData.mensagem.trim()}
           >
-            {loading ? "Enviando..." : "Enviar"} 
+            {loading ? "Enviando..." : "Enviar"}
           </button>
         </form>
       </div>
