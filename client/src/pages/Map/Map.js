@@ -17,7 +17,6 @@ const Map = () => {
   const [map, setMap] = useState(null);
   const [lavanderias, setLavanderias] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [routeMode, setRouteMode] = useState(false);
   const [activeTab, setActiveTab] = useState("mapa");
   const [userLocation, setUserLocation] = useState(null);
   const userMarkerRef = useRef(null);
@@ -312,6 +311,15 @@ const Map = () => {
               <p style="margin: 5px 0;"><strong>Avaliação:</strong> ${"★".repeat(Math.floor(lavanderia.avaliacao || 0))} ${lavanderia.avaliacao || "Não avaliado"}</p>
               <p style="margin: 5px 0;"><strong>Telefone:</strong> ${lavanderia.telefone || "Não informado"}</p>
               <p style="margin: 5px 0;"><strong>Horário:</strong> ${lavanderia.horario || "Consultar"}</p>
+              
+              <!-- Botão de Traçar Rota -->
+              <div style="margin: 10px 0; text-align: center;">
+                <button onclick="if(window.tracarRota) window.tracarRota(${lavanderia.latitude}, ${lavanderia.longitude}, '${lavanderia.nome}')" 
+                  style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 600; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3); transition: all 0.2s;">
+                  <span style="margin-right: 5px;">🗺️</span>Traçar Rota
+                </button>
+              </div>
+              
               <div id="maquinas-${lavanderia.id}" style="margin-top: 10px;">
                 <div style="text-align: center; padding: 10px; color: #6c757d;">
                   <div style="display: inline-block; width: 16px; height: 16px; border: 2px solid #6c757d; border-top: 2px solid #2563eb; border-radius: 50%; animation: spin 1s linear infinite;"></div>
@@ -353,18 +361,20 @@ const Map = () => {
                   <p style="margin: 5px 0;"><strong>Avaliação:</strong> ${"★".repeat(Math.floor(lavanderia.avaliacao || 0))} ${lavanderia.avaliacao || "Não avaliado"}</p>
                   <p style="margin: 5px 0;"><strong>Telefone:</strong> ${lavanderia.telefone || "Não informado"}</p>
                   <p style="margin: 5px 0;"><strong>Horário:</strong> ${lavanderia.horario || "Consultar"}</p>
+                  
+                  <!-- Botão de Traçar Rota -->
+                  <div style="margin: 10px 0; text-align: center;">
+                    <button onclick="if(window.tracarRota) window.tracarRota(${lavanderia.latitude}, ${lavanderia.longitude}, '${lavanderia.nome}')" 
+                      style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 600; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3); transition: all 0.2s;">
+                      <span style="margin-right: 5px;">🗺️</span>Traçar Rota
+                    </button>
+                  </div>
+                  
                   ${maquinasHTML}
                 </div>
               `;
 
               marker.setPopupContent(updatedContent);
-
-              if (routeMode) {
-                traceRouteToLavanderia(
-                  lavanderia.latitude,
-                  lavanderia.longitude,
-                );
-              }
             } catch (error) {
               console.error("💥 Erro ao carregar máquinas no popup:", error);
               const errorContent = `
@@ -374,21 +384,21 @@ const Map = () => {
                   <p style="margin: 5px 0;"><strong>Avaliação:</strong> ${"★".repeat(Math.floor(lavanderia.avaliacao || 0))} ${lavanderia.avaliacao || "Não avaliado"}</p>
                   <p style="margin: 5px 0;"><strong>Telefone:</strong> ${lavanderia.telefone || "Não informado"}</p>
                   <p style="margin: 5px 0;"><strong>Horário:</strong> ${lavanderia.horario || "Consultar"}</p>
+                  
+                  <!-- Botão de Traçar Rota -->
+                  <div style="margin: 10px 0; text-align: center;">
+                    <button onclick="if(window.tracarRota) window.tracarRota(${lavanderia.latitude}, ${lavanderia.longitude}, '${lavanderia.nome}')" 
+                      style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 600; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3); transition: all 0.2s;">
+                      <span style="margin-right: 5px;">🗺️</span>Traçar Rota
+                    </button>
+                  </div>
+                  
                   <div style="margin-top: 10px; padding: 8px; background: #ffebee; border-radius: 4px; color: #c62828;">
                     Erro ao carregar máquinas
                   </div>
                 </div>
               `;
               marker.setPopupContent(errorContent);
-            }
-          });
-          marker.on("click", () => {
-            if (routeMode) {
-              // Se routeMode estiver ativo, traça rota sem abrir popup
-              traceRouteToLavanderia(lavanderia.latitude, lavanderia.longitude);
-
-              const lavanderiaName = lavanderia.nome || "Lavanderia";
-              console.log(`🗺️ Traçando rota para ${lavanderiaName}`);
             }
           });
         } catch (error) {
@@ -400,17 +410,18 @@ const Map = () => {
         }
       });
 
-      // Expor função reservarMaquina globalmente para uso nos botões HTML
+      // Expor funções globalmente para uso nos botões HTML
       if (typeof window !== "undefined") {
         window.reservarMaquina = reservarMaquina;
         window.recarregarLavanderias = recarregarLavanderias;
+        window.tracarRota = traceRouteToLavanderia;
       }
     } catch (error) {
       console.error("Erro ao adicionar marcadores das lavanderias:", error);
     }
 
     return () => {
-      // Cleanup: remover função global
+      // Cleanup: remover funções globais
       try {
         if (typeof window !== "undefined") {
           if (window.reservarMaquina) {
@@ -419,12 +430,14 @@ const Map = () => {
           if (window.recarregarLavanderias) {
             delete window.recarregarLavanderias;
           }
+          if (window.reservarMaquina) delete window.reservarMaquina;
+          if (window.tracarRota) delete window.tracarRota;
         }
       } catch (error) {
         console.warn("Erro no cleanup:", error);
       }
     };
-  }, [map, lavanderias, routeMode, userLocation]); // Removido lavanderiasMaquinas das dependências
+  }, [map, lavanderias, userLocation]); // Removido routeMode das dependências
 
   const handleSearch = () => {
     if (!searchTerm.trim()) return;
@@ -439,56 +452,6 @@ const Map = () => {
       map.setView([found.latitude, found.longitude], 16);
     } else {
       alert(`Nenhuma lavanderia encontrada para: "${searchTerm}"`);
-    }
-  };
-
-  const toggleRouteMode = () => {
-    const newRouteMode = !routeMode;
-    setRouteMode(newRouteMode);
-
-    console.log("Toggling route mode from", routeMode, "to", newRouteMode);
-
-    if (newRouteMode) {
-      alert("Modo rota ativado! Clique em uma lavanderia para traçar a rota.");
-    } else {
-      console.log("Desativando modo rota - removendo todas as rotas");
-
-      if (map) {
-        if (window.routePolyline) {
-          try {
-            if (map.hasLayer(window.routePolyline)) {
-              map.removeLayer(window.routePolyline);
-              console.log("Rota removida do mapa via window.routePolyline");
-            }
-            window.routePolyline = null;
-          } catch (error) {
-            console.error(
-              "Erro ao remover rota via window.routePolyline:",
-              error,
-            );
-          }
-        }
-
-        try {
-          map.eachLayer((layer) => {
-            if (layer instanceof window.L.Polyline) {
-              if (
-                layer.options &&
-                (layer.options.color === "#3b82f6" ||
-                  layer.options.color === "#ff6b6b" ||
-                  layer.options.dashArray === "10, 5")
-              ) {
-                map.removeLayer(layer);
-                console.log("Rota removida via eachLayer");
-              }
-            }
-          });
-        } catch (error) {
-          console.error("Erro ao remover rotas via eachLayer:", error);
-        }
-        window.routePolyline = null;
-      }
-      alert("Modo rota desativado! Rotas removidas do mapa.");
     }
   };
 
@@ -547,7 +510,11 @@ const Map = () => {
     return coordinates;
   };
 
-  const fallbackStraightLine = (destLat, destLng) => {
+  const fallbackStraightLine = (
+    destLat,
+    destLng,
+    lavanderiaName = "Lavanderia",
+  ) => {
     if (!map || !userLocation) return;
 
     if (window.routePolyline && map.hasLayer(window.routePolyline)) {
@@ -573,10 +540,16 @@ const Map = () => {
       destLat,
       destLng,
     );
-    alert(`Rota aproximada: ${distance.toFixed(2)} km`);
+    alert(
+      `Rota para ${lavanderiaName}\nDistância aproximada: ${distance.toFixed(2)} km`,
+    );
   };
 
-  const traceRouteToLavanderia = async (destLat, destLng) => {
+  const traceRouteToLavanderia = async (
+    destLat,
+    destLng,
+    lavanderiaName = "Lavanderia",
+  ) => {
     if (!map || !userLocation) {
       alert("Mapa ou localização do usuário não disponível");
       return;
@@ -615,10 +588,10 @@ const Map = () => {
 
       const distance = (path.distance / 1000).toFixed(2);
       const duration = Math.round(path.time / 1000 / 60);
-      alert(`Rota GraphHopper!\n${distance} km - ${duration} min`);
+      alert(`Rota para ${lavanderiaName}\n${distance} km - ${duration} min`);
     } catch (error) {
       console.error("Erro GraphHopper:", error);
-      fallbackStraightLine(destLat, destLng);
+      fallbackStraightLine(destLat, destLng, lavanderiaName);
     }
   };
 
@@ -869,7 +842,7 @@ const Map = () => {
 
   return (
     <div className="container">
-      {/* Header */}
+      {/* Header - Removido botão de rota */}
       <div className="header">
         <div className="header-inner">
           <div className="input-wrapper">
@@ -885,26 +858,12 @@ const Map = () => {
           <button onClick={handleSearch} className="search-btn">
             Buscar
           </button>
-          <button
-            onClick={toggleRouteMode}
-            className={`route-btn ${routeMode ? "active" : ""}`}
-          >
-            <Route size={20} />
-          </button>
         </div>
       </div>
 
       {/* Mapa */}
       <div className="map-container">
         <div ref={mapRef} id="map" />
-
-        {/* Indicador de rota */}
-        {routeMode && (
-          <div className="route-indicator">
-            <Navigation size={16} />
-            <span>Modo Rota Ativo</span>
-          </div>
-        )}
       </div>
 
       {/* Barra de navegação */}
