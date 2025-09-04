@@ -1,10 +1,10 @@
 import {
-    Clock,
-    MapPin,
-    Navigation,
-    Route,
-    Search,
-    User
+  Clock,
+  MapPin,
+  Navigation,
+  Route,
+  Search,
+  User
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { MdSupportAgent } from "react-icons/md";
