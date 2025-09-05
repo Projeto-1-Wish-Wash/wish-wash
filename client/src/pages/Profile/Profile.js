@@ -15,6 +15,9 @@ const Profile = () => {
   const [fieldToEdit, setFieldToEdit] = useState("");
   const [editValue, setEditValue] = useState("");
   const [isEditModalChanged, setIsEditModalChanged] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentData, setPaymentData] = useState({ numero: "", nome: "", validade: "", cvv: "" });
+  const [isPaymentChanged, setIsPaymentChanged] = useState(false);
 
   const navigate = useNavigate();
 
@@ -50,6 +53,13 @@ const Profile = () => {
     setEditValue("");
     setIsEditModalChanged(false);
   };
+
+  const openPaymentModal = () => {
+    setShowPaymentModal(true);
+    setPaymentData({ numero: "", nome: "", validade: "", cvv: "" });
+    setIsPaymentChanged(false);
+  };
+  const closePaymentModal = () => setShowPaymentModal(false);
 
   // Busca dados do usuário
   useEffect(() => {
@@ -112,6 +122,17 @@ const Profile = () => {
     setCoordinates(newCoordinates);
   };
 
+  const handlePaymentChange = (e) => {
+    const { name, value } = e.target;
+    setPaymentData((prev) => ({ ...prev, [name]: value }));
+    setIsPaymentChanged(
+      paymentData.numero !== "" &&
+      paymentData.nome !== "" &&
+      paymentData.validade !== "" &&
+      paymentData.cvv !== ""
+    );
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     if (!isEditModalChanged) return;
@@ -161,6 +182,15 @@ const Profile = () => {
     } catch (err) {
       alert(err.message);
     }
+  };
+
+  const handleSavePayment = async (e) => {
+    e.preventDefault();
+    // Aqui você pode fazer a requisição para salvar o método de pagamento na API
+    // Exemplo:
+    // await fetch('/api/pagamentos', { method: 'POST', body: JSON.stringify(paymentData), ... });
+    closePaymentModal();
+    alert("Método de pagamento cadastrado com sucesso!");
   };
 
   const confirmDelete = async () => {
@@ -280,6 +310,13 @@ const Profile = () => {
             <BsTrash3 className="option-icon" />
             <span>Excluir conta</span>
           </button>
+
+          <button
+            className="option-item"
+            onClick={openPaymentModal}
+          >
+            💳 <span>Cadastrar Pagamento</span>
+          </button>
         </div>
 
         {/*Modal de exclusão */}
@@ -364,6 +401,72 @@ const Profile = () => {
                 Cancelar
               </Button>
               <Button variant="primary" type="submit" disabled={!isEditModalChanged}>
+                Salvar
+              </Button>
+            </Modal.Footer>
+          </form>
+        </Modal>
+
+        {/* Modal de pagamento */}
+        <Modal
+          show={showPaymentModal}
+          onHide={closePaymentModal}
+          {...modalCommonProps}
+        >
+          <Modal.Header>
+            <Modal.Title>Cadastrar Método de Pagamento</Modal.Title>
+          </Modal.Header>
+          <form onSubmit={handleSavePayment} className="modal-edit-form">
+            <Modal.Body>
+              <div className="input-group">
+                <input
+                  type="text"
+                  name="numero"
+                  value={paymentData.numero}
+                  onChange={handlePaymentChange}
+                  className="modal-input"
+                  placeholder="Número do cartão"
+                  required
+                  maxLength={19}
+                />
+                <input
+                  type="text"
+                  name="nome"
+                  value={paymentData.nome}
+                  onChange={handlePaymentChange}
+                  className="modal-input"
+                  placeholder="Nome no cartão"
+                  required
+                />
+                <input
+                  type="text"
+                  name="validade"
+                  value={paymentData.validade}
+                  onChange={handlePaymentChange}
+                  className="modal-input"
+                  placeholder="Validade (MM/AA)"
+                  required
+                  maxLength={5}
+                />
+                <input
+                  type="password"
+                  name="cvv"
+                  value={paymentData.cvv}
+                  onChange={handlePaymentChange}
+                  className="modal-input"
+                  placeholder="CVV"
+                  required
+                  maxLength={4}
+                />
+              </div>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={closePaymentModal} type="button">
+                Cancelar
+              </Button>
+              <Button variant="primary" type="submit" disabled={
+                !paymentData.numero || !paymentData.nome || !paymentData.validade || !paymentData.cvv
+              }>
                 Salvar
               </Button>
             </Modal.Footer>
