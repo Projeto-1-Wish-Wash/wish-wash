@@ -280,3 +280,9 @@
       font-size: 0.9rem;
     }
   }
+
+@media (max-width: 720px) {
+  .profile-content-box {
+    width: 375px;
+  }
+}

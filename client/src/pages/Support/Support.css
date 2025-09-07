@@ -100,3 +100,9 @@
   color: #2d80da;
   cursor: pointer;
 }
+
+@media (max-width: 720px) {
+  .support-content-box {
+    width: 375px;
+  }
+}
