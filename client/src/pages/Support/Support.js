@@ -12,23 +12,33 @@ const Support = () => {
   });
 
   const [loading, setLoading] = useState(false);
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false); 
+  const [user, setUser] = useState(null); 
 
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (user) {
-      const userData = JSON.parse(user);
+    const userString = localStorage.getItem("user");
+    if (userString) {
+      const userData = JSON.parse(userString);
+      setUser(userData);
       setFormData((prevData) => ({
         ...prevData,
         nome: userData.nome || "",
         email: userData.email || "",
       }));
-      setIsUserLoggedIn(true);
     }
   }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const getRedirectPath = () => {
+    if (!user) {
+      return "/login";
+    }
+    if (user.tipo_usuario === 'proprietario') {
+      return "/laundry-profile";
+    }
+    return "/map";
   };
 
   const handleSubmit = async (e) => {
@@ -47,13 +57,11 @@ const Support = () => {
       }
 
       alert("Sua mensagem foi enviada com sucesso! Em breve entraremos em contato.");
-      setFormData({ nome: "", email: "", mensagem: "" });
+      
+      setFormData((prevData) => ({ ...prevData, mensagem: "" }));
 
-      if(isUserLoggedIn){
-        navigate("/map");
-      } else{
-        navigate("/login");        
-      }
+      navigate(getRedirectPath());
+
     } catch (err) {
       alert(err.message);
     } finally {
@@ -65,7 +73,8 @@ const Support = () => {
     <div className="support-page">
       <div className="support-content-box">
         <button
-          onClick={() => (isUserLoggedIn ? navigate("/map") : navigate("/login"))}
+          // Usamos a mesma lógica de redirecionamento no botão "Voltar"
+          onClick={() => navigate(getRedirectPath())}
           className="support-back-button"
         >
           ← Voltar
@@ -85,7 +94,7 @@ const Support = () => {
             className="support-input"
             placeholder="Seu nome"
             required
-            disabled={isUserLoggedIn}
+            disabled={!!user}
           />
 
           <input
@@ -96,7 +105,7 @@ const Support = () => {
             className="support-input"
             placeholder="Seu email"
             required
-            disabled={isUserLoggedIn}
+            disabled={!!user}
           />
 
           <textarea
