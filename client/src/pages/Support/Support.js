@@ -73,7 +73,6 @@ const Support = () => {
     <div className="support-page">
       <div className="support-content-box">
         <button
-          // Usamos a mesma lógica de redirecionamento no botão "Voltar"
           onClick={() => navigate(getRedirectPath())}
           className="support-back-button"
         >
