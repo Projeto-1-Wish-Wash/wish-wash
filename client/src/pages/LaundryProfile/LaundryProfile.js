@@ -8,6 +8,8 @@ import AddressInput from "../../components/AddressInput";
 import "./LaundryProfile.css";
 
 const LaundryProfile = () => {
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
   const [proprietario, setProprietario] = useState({
     nome: "",
     email: "",
@@ -88,7 +90,7 @@ const LaundryProfile = () => {
         }
 
         // Buscar dados do proprietário
-        const userRes = await fetch(`/api/usuarios/${userId}`, {
+        const userRes = await fetch(`${API_URL}/api/usuarios/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -102,7 +104,7 @@ const LaundryProfile = () => {
         });
 
         // Buscar dados da lavanderia
-        const laundryRes = await fetch(`/api/lavanderias/proprietario/${userId}`, {
+        const laundryRes = await fetch(`${API_URL}/api/lavanderias/proprietario/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -135,7 +137,7 @@ const LaundryProfile = () => {
     };
 
     fetchData();
-  }, [navigate]);
+  }, [navigate, API_URL]);
 
   const handleChange = (e) => {
     setEditValue(e.target.value);
@@ -164,7 +166,7 @@ const LaundryProfile = () => {
   // Função para carregar máquinas da lavanderia
   const fetchMaquinas = async (lavanderiaId, token) => {
     try {
-      const response = await fetch(`/api/maquinas/lavanderia/${lavanderiaId}`, {
+      const response = await fetch(`${API_URL}/api/maquinas/lavanderia/${lavanderiaId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       
@@ -181,7 +183,7 @@ const LaundryProfile = () => {
   const updateMaquinaStatus = async (maquinaId, novoStatus) => {
     try {
       const { token } = getUserAuthData();
-      const response = await fetch(`/api/maquinas/${maquinaId}/status`, {
+      const response = await fetch(`${API_URL}/api/maquinas/${maquinaId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -212,7 +214,7 @@ const LaundryProfile = () => {
 
     try {
       const { token } = getUserAuthData();
-      const response = await fetch('/api/maquinas', {
+      const response = await fetch(`${API_URL}/api/maquinas`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -252,7 +254,7 @@ const LaundryProfile = () => {
 
     try {
       const { token } = getUserAuthData();
-      const response = await fetch(`/api/maquinas/${maquinaId}`, {
+      const response = await fetch(`${API_URL}/api/maquinas/${maquinaId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -288,7 +290,7 @@ const LaundryProfile = () => {
         if (fieldToEdit === "email") updatedData.email = editValue;
         if (fieldToEdit === "senha" && editValue.trim() !== "") updatedData.senha = editValue;
 
-        const res = await fetch(`/api/usuarios/${userId}`, {
+        const res = await fetch(`${API_URL}/api/usuarios/${userId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -304,7 +306,7 @@ const LaundryProfile = () => {
 
       } else {
         // Atualizar dados da lavanderia
-        const laundryRes = await fetch(`/api/lavanderias/proprietario/${userId}`, {
+        const laundryRes = await fetch(`${API_URL}/api/lavanderias/proprietario/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -325,7 +327,7 @@ const LaundryProfile = () => {
           }
           if (fieldToEdit === "telefone") updatedData.telefone = editValue;
 
-          const updateRes = await fetch(`/api/lavanderias/${laundryId}`, {
+          const updateRes = await fetch(`${API_URL}/api/lavanderias/${laundryId}`, {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
@@ -356,7 +358,7 @@ const LaundryProfile = () => {
         return;
       }
 
-      const res = await fetch(`/api/usuarios/${userId}`, {
+      const res = await fetch(`${API_URL}/api/usuarios/${userId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

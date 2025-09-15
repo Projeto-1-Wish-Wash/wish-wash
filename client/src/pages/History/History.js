@@ -38,7 +38,10 @@ function History() {
 
       setAvaliandoItem(historicoId);
 
-      const response = await fetch(`/api/historico-lavagens/${historicoId}/avaliar`, {
+      // Define a URL base da API a partir da variável de ambiente
+      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
+      const response = await fetch(`${API_URL}/api/historico-lavagens/${historicoId}/avaliar`, { // Usa a URL completa
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -49,9 +52,9 @@ function History() {
 
       if (response.ok) {
         // Atualizar o item no estado local
-        setHistorico(prevHistorico => 
-          prevHistorico.map(item => 
-            item.id === historicoId 
+        setHistorico(prevHistorico =>
+          prevHistorico.map(item =>
+            item.id === historicoId
               ? { ...item, avaliacao_usuario: avaliacao }
               : item
           )
@@ -90,8 +93,8 @@ function History() {
           <p><strong>Sua avaliação:</strong></p>
           <div className="estrelas-display">
             {[1, 2, 3, 4, 5].map(num => (
-              <span 
-                key={num} 
+              <span
+                key={num}
                 className={`estrela ${num <= item.avaliacao_usuario ? 'ativa' : ''}`}
               >
                 ★
@@ -138,7 +141,10 @@ function History() {
           return;
         }
 
-        const response = await fetch(`/api/historico-lavagens/usuario/${userId}`, {
+        // Define a URL base da API a partir da variável de ambiente
+        const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
+        const response = await fetch(`${API_URL}/api/historico-lavagens/usuario/${userId}`, { // Usa a URL completa
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -177,7 +183,7 @@ function History() {
           // Nome da lavanderia
           const nomeLavanderia = item.lavanderia?.nome || item.lavanderia || 'Lavanderia desconhecida';
           // Converte a data para o formato pt-BR no fuso horário do Brasil
-          const dataFormatada = item.data ? new Date(item.data).toLocaleDateString('pt-BR', { 
+          const dataFormatada = item.data ? new Date(item.data).toLocaleDateString('pt-BR', {
             timeZone: 'America/Sao_Paulo',
             day: '2-digit',
             month: '2-digit',

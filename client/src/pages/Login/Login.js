@@ -13,7 +13,10 @@ const Login = () => {
     setError('');
 
     try {
-      const response = await fetch('/api/usuarios/login', {
+      // Define a URL base da API a partir da variável de ambiente
+      const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
+      const response = await fetch(`${API_URL}/api/usuarios/login`, { // Usa a URL completa
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
