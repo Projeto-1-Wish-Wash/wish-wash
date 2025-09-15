@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import "./Support.css";
 
 const Support = () => {
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     nome: "",
@@ -36,7 +38,7 @@ const Support = () => {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/suporte", {
+      const res = await fetch(`${API_URL}/api/suporte`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

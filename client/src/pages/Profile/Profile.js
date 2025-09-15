@@ -7,6 +7,8 @@ import AddressInput from "../../components/AddressInput";
 import "./Profile.css";
 
 const Profile = () => {
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
   const [formData, setFormData] = useState({ nome: "", email: "", senha: "", endereco: "" });
   const [coordinates, setCoordinates] = useState({ latitude: null, longitude: null });
   const [loading, setLoading] = useState(true);
@@ -61,7 +63,7 @@ const Profile = () => {
           return;
         }
 
-        const res = await fetch(`/api/usuarios/${userId}`, {
+        const res = await fetch(`${API_URL}/api/usuarios/${userId}`, { // Usa a URL completa
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -87,7 +89,7 @@ const Profile = () => {
     };
 
     fetchUser();
-  }, [navigate]);
+  }, [navigate, API_URL]); // Adicionado API_URL às dependências
 
   // handlers
   const handleChange = (e) => {
@@ -136,7 +138,7 @@ const Profile = () => {
       if (fieldToEdit === "senha" && editValue.trim() !== "")
         updatedData.senha = editValue;
 
-      const res = await fetch(`/api/usuarios/${userId}`, {
+      const res = await fetch(`${API_URL}/api/usuarios/${userId}`, { // Usa a URL completa
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -153,10 +155,6 @@ const Profile = () => {
         [fieldToEdit]: fieldToEdit === "senha" ? "" : editValue,
       }));
       
-      // Se foi editado o endereço, também atualize as coordenadas locais
-      if (fieldToEdit === "endereco" && coordinates.latitude && coordinates.longitude) {
-        // As coordenadas já foram atualizadas no handleCoordinatesChange
-      }
       closeEditModal();
     } catch (err) {
       alert(err.message);
@@ -172,7 +170,7 @@ const Profile = () => {
         return;
       }
 
-      const res = await fetch(`/api/usuarios/${userId}`, {
+      const res = await fetch(`${API_URL}/api/usuarios/${userId}`, { // Usa a URL completa
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -198,7 +196,6 @@ const Profile = () => {
   return (
     <div className="profile-page">
       <div className="profile-content-box">
-        {/* Botão para voltar ao mapa */}
         <button 
           onClick={() => navigate('/map')} 
           className="back-button"

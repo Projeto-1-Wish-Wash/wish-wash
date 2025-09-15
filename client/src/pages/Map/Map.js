@@ -12,6 +12,8 @@ import { useNavigate } from "react-router-dom";
 import "./Map.css";
 
 const Map = () => {
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
   const navigate = useNavigate();
   const mapRef = useRef(null);
   const [map, setMap] = useState(null);
@@ -26,7 +28,7 @@ const Map = () => {
   // Função para recarregar dados das lavanderias (útil após avaliações)
   const recarregarLavanderias = async () => {
     try {
-      const response = await fetch("/api/lavanderias");
+      const response = await fetch(`${API_URL}/api/lavanderias`);
       if (response.ok) {
         const data = await response.json();
         const lavanderiasFiltradas =
@@ -93,7 +95,7 @@ const Map = () => {
       },
     ];
 
-    fetch("/api/lavanderias")
+    fetch(`${API_URL}/api/lavanderias`)
       .then((res) => {
         if (!res.ok) throw new Error("Erro ao buscar lavanderias");
         return res.json();
@@ -613,7 +615,7 @@ const Map = () => {
         headers["Authorization"] = `Bearer ${token}`;
       }
 
-      const response = await fetch(`/api/maquinas/lavanderia/${lavanderiaId}`, {
+      const response = await fetch(`${API_URL}/api/maquinas/lavanderia/${lavanderiaId}`, {
         method: "GET",
         headers: headers,
       });
@@ -655,7 +657,7 @@ const Map = () => {
         return;
       }
 
-      const response = await fetch(`/api/maquinas/${maquinaId}/status`, {
+      const response = await fetch(`${API_URL}/api/maquinas/${maquinaId}/status`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

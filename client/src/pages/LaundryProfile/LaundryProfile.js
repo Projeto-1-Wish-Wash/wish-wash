@@ -8,6 +8,9 @@ import AddressInput from "../../components/AddressInput";
 import "./LaundryProfile.css";
 
 const LaundryProfile = () => {
+  // A URL base da API é definida
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
   const [proprietario, setProprietario] = useState({
     nome: "",
     email: "",
@@ -88,7 +91,7 @@ const LaundryProfile = () => {
         }
 
         // Buscar dados do proprietário
-        const userRes = await fetch(`/api/usuarios/${userId}`, {
+        const userRes = await fetch(`${API_URL}/api/usuarios/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -102,7 +105,7 @@ const LaundryProfile = () => {
         });
 
         // Buscar dados da lavanderia
-        const laundryRes = await fetch(`/api/lavanderias/proprietario/${userId}`, {
+        const laundryRes = await fetch(`${API_URL}/api/lavanderias/proprietario/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -135,7 +138,7 @@ const LaundryProfile = () => {
     };
 
     fetchData();
-  }, [navigate]);
+  }, [navigate, API_URL]); // Adicionado API_URL às dependências
 
   const handleChange = (e) => {
     setEditValue(e.target.value);
@@ -164,7 +167,7 @@ const LaundryProfile = () => {
   // Função para carregar máquinas da lavanderia
   const fetchMaquinas = async (lavanderiaId, token) => {
     try {
-      const response = await fetch(`/api/maquinas/lavanderia/${lavanderiaId}`, {
+      const response = await fetch(`${API_URL}/api/maquinas/lavanderia/${lavanderiaId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       
@@ -181,7 +184,7 @@ const LaundryProfile = () => {
   const updateMaquinaStatus = async (maquinaId, novoStatus) => {
     try {
       const { token } = getUserAuthData();
-      const response = await fetch(`/api/maquinas/${maquinaId}/status`, {
+      const response = await fetch(`${API_URL}/api/maquinas/${maquinaId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -212,7 +215,7 @@ const LaundryProfile = () => {
 
     try {
       const { token } = getUserAuthData();
-      const response = await fetch('/api/maquinas', {
+      const response = await fetch(`${API_URL}/api/maquinas`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -252,7 +255,7 @@ const LaundryProfile = () => {
 
     try {
       const { token } = getUserAuthData();
-      const response = await fetch(`/api/maquinas/${maquinaId}`, {
+      const response = await fetch(`${API_URL}/api/maquinas/${maquinaId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -288,7 +291,7 @@ const LaundryProfile = () => {
         if (fieldToEdit === "email") updatedData.email = editValue;
         if (fieldToEdit === "senha" && editValue.trim() !== "") updatedData.senha = editValue;
 
-        const res = await fetch(`/api/usuarios/${userId}`, {
+        const res = await fetch(`${API_URL}/api/usuarios/${userId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -304,7 +307,7 @@ const LaundryProfile = () => {
 
       } else {
         // Atualizar dados da lavanderia
-        const laundryRes = await fetch(`/api/lavanderias/proprietario/${userId}`, {
+        const laundryRes = await fetch(`${API_URL}/api/lavanderias/proprietario/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -325,7 +328,7 @@ const LaundryProfile = () => {
           }
           if (fieldToEdit === "telefone") updatedData.telefone = editValue;
 
-          const updateRes = await fetch(`/api/lavanderias/${laundryId}`, {
+          const updateRes = await fetch(`${API_URL}/api/lavanderias/${laundryId}`, {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
@@ -356,7 +359,7 @@ const LaundryProfile = () => {
         return;
       }
 
-      const res = await fetch(`/api/usuarios/${userId}`, {
+      const res = await fetch(`${API_URL}/api/usuarios/${userId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -381,308 +384,308 @@ const LaundryProfile = () => {
 
   return (
     <div className="laundry-profile-page">
-      <div className="laundry-profile-content-box">
-        <div className="laundry-profile-header">
-          <div className="laundry-icon">
-            <BsShop
-              size={80}
-              color="#2d80da"
-              className="bi bi-shop"
-            />
-          </div>
-          <p className="laundry-profile-name">{lavanderia.nome}</p>
-          <p className="laundry-profile-ownername">Proprietário: {proprietario.nome}</p>
-          {lavanderia.endereco && (
-            <p className="laundry-profile-address" style={{ color: '#6b7280', fontSize: '14px', marginTop: '5px' }}>
-              📍 {lavanderia.endereco}
-            </p>
-          )}
-        </div>
+       <div className="laundry-profile-content-box">
+         <div className="laundry-profile-header">
+           <div className="laundry-icon">
+             <BsShop
+               size={80}
+               color="#2d80da"
+               className="bi bi-shop"
+             />
+           </div>
+           <p className="laundry-profile-name">{lavanderia.nome}</p>
+           <p className="laundry-profile-ownername">Proprietário: {proprietario.nome}</p>
+           {lavanderia.endereco && (
+             <p className="laundry-profile-address" style={{ color: '#6b7280', fontSize: '14px', marginTop: '5px' }}>
+               📍 {lavanderia.endereco}
+             </p>
+           )}
+         </div>
 
-        <div className="laundry-profile-options">
-          {/* Proprietário */}
-          <button className="laundry-option-item" onClick={() => openEditModal("proprietario", "nome")}>
-            <AiOutlineUser className="laundry-option-icon" />
-            <span>Alterar Nome do Proprietário</span>
-          </button>
-          <button className="laundry-option-item" onClick={() => openEditModal("proprietario", "email")}>
-            <AiOutlineMail className="laundry-option-icon" />
-            <span>Alterar Email do Proprietário</span>
-          </button>
-          <button className="laundry-option-item" onClick={() => openEditModal("proprietario", "senha")}>
-            <AiOutlineLock className="laundry-option-icon" />
-            <span>Alterar Senha do Proprietário</span>
-          </button>
+         <div className="laundry-profile-options">
+           {/* Proprietário */}
+           <button className="laundry-option-item" onClick={() => openEditModal("proprietario", "nome")}>
+             <AiOutlineUser className="laundry-option-icon" />
+             <span>Alterar Nome do Proprietário</span>
+           </button>
+           <button className="laundry-option-item" onClick={() => openEditModal("proprietario", "email")}>
+             <AiOutlineMail className="laundry-option-icon" />
+             <span>Alterar Email do Proprietário</span>
+           </button>
+           <button className="laundry-option-item" onClick={() => openEditModal("proprietario", "senha")}>
+             <AiOutlineLock className="laundry-option-icon" />
+             <span>Alterar Senha do Proprietário</span>
+           </button>
 
-          {/* Lavanderia */}
-          <button className="laundry-option-item" onClick={() => openEditModal("lavanderia", "nome")}>
-            <MdOutlineLocalLaundryService className="laundry-option-icon laundry-service-icon" />
-            <span>Alterar Nome da Lavanderia</span>
-          </button>
-          <button className="laundry-option-item" onClick={() => openEditModal("lavanderia", "endereco")}>
-            <BsPinMap className="laundry-option-icon" />
-            <span>Alterar Endereço da Lavanderia</span>
-          </button>
-          <button className="laundry-option-item" onClick={() => openEditModal("lavanderia", "telefone")}>
-            <BsTelephone className="laundry-option-icon" />
-            <span>Alterar Telefone</span>
-          </button>
+           {/* Lavanderia */}
+           <button className="laundry-option-item" onClick={() => openEditModal("lavanderia", "nome")}>
+             <MdOutlineLocalLaundryService className="laundry-option-icon laundry-service-icon" />
+             <span>Alterar Nome da Lavanderia</span>
+           </button>
+           <button className="laundry-option-item" onClick={() => openEditModal("lavanderia", "endereco")}>
+             <BsPinMap className="laundry-option-icon" />
+             <span>Alterar Endereço da Lavanderia</span>
+           </button>
+           <button className="laundry-option-item" onClick={() => openEditModal("lavanderia", "telefone")}>
+             <BsTelephone className="laundry-option-icon" />
+             <span>Alterar Telefone</span>
+           </button>
 
-          <button
-            className="laundry-option-item logout-item"
-            onClick={() => {
-              localStorage.clear();
-              navigate("/login");
-            }}
-          >
-            <AiOutlineLogout className="laundry-option-icon" />
-            <span>Sair</span>
-          </button>
+           <button
+             className="laundry-option-item logout-item"
+             onClick={() => {
+               localStorage.clear();
+               navigate("/login");
+             }}
+           >
+             <AiOutlineLogout className="laundry-option-icon" />
+             <span>Sair</span>
+           </button>
 
-          <button
-            type="button"
-            className="laundry-option-item delete-item"
-            onClick={openDeleteModal}
-          >
-            <BsTrash3 className="laundry-option-icon" />
-            <span>Excluir Conta</span>
-          </button>
-        </div>
+           <button
+             type="button"
+             className="laundry-option-item delete-item"
+             onClick={openDeleteModal}
+           >
+             <BsTrash3 className="laundry-option-icon" />
+             <span>Excluir Conta</span>
+           </button>
+         </div>
 
-        {/* Seção de Máquinas */}
-        <div className="machines-section">
-          <div className="machines-header">
-            <h3>Máquinas ({maquinas.length})</h3>
-            <button 
-              className="add-machine-btn"
-              onClick={() => setShowAddMaquinaModal(true)}
-            >
-              + Adicionar Máquina
-            </button>
-          </div>
-          
-          {maquinas.length === 0 ? (
-            <div className="no-machines">
-              <p>Nenhuma máquina cadastrada ainda.</p>
-              <p>Clique em "Adicionar Máquina" para começar.</p>
-            </div>
-          ) : (
-            <div className="machines-list">
-              {maquinas.map((maquina) => (
-                <div key={maquina.id} className="machine-item">
-                  <div className="machine-info">
-                    <h4>{maquina.nome}</h4>
-                    {maquina.capacidade && (
-                      <span className="machine-capacity">{maquina.capacidade}</span>
-                    )}
-                    {maquina.valor_lavagem && (
-                      <span className="machine-price">R$ {maquina.valor_lavagem.toFixed(2).replace('.', ',')}</span>
-                    )}
-                    <span className={`machine-status ${maquina.status}`}>
-                      {maquina.status === 'disponivel' && '🟢 Disponível'}
-                      {maquina.status === 'em_uso' && '🔴 Em Uso'}
-                      {maquina.status === 'manutencao' && '🟡 Manutenção'}
-                    </span>
-                  </div>
-                  
-                  <div className="machine-actions">
-                    <select 
-                      value={maquina.status}
-                      onChange={(e) => updateMaquinaStatus(maquina.id, e.target.value)}
-                      className="status-select"
-                    >
-                      <option value="disponivel">Disponível</option>
-                      <option value="em_uso">Em Uso</option>
-                      <option value="manutencao">Manutenção</option>
-                    </select>
-                    
-                    <button 
-                      className="delete-machine-btn"
-                      onClick={() => deleteMaquina(maquina.id)}
-                      title="Excluir máquina"
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+         {/* Seção de Máquinas */}
+         <div className="machines-section">
+           <div className="machines-header">
+             <h3>Máquinas ({maquinas.length})</h3>
+             <button 
+               className="add-machine-btn"
+               onClick={() => setShowAddMaquinaModal(true)}
+             >
+               + Adicionar Máquina
+             </button>
+           </div>
+           
+           {maquinas.length === 0 ? (
+             <div className="no-machines">
+               <p>Nenhuma máquina cadastrada ainda.</p>
+               <p>Clique em "Adicionar Máquina" para começar.</p>
+             </div>
+           ) : (
+             <div className="machines-list">
+               {maquinas.map((maquina) => (
+                 <div key={maquina.id} className="machine-item">
+                   <div className="machine-info">
+                     <h4>{maquina.nome}</h4>
+                     {maquina.capacidade && (
+                       <span className="machine-capacity">{maquina.capacidade}</span>
+                     )}
+                     {maquina.valor_lavagem && (
+                       <span className="machine-price">R$ {maquina.valor_lavagem.toFixed(2).replace('.', ',')}</span>
+                     )}
+                     <span className={`machine-status ${maquina.status}`}>
+                       {maquina.status === 'disponivel' && '🟢 Disponível'}
+                       {maquina.status === 'em_uso' && '🔴 Em Uso'}
+                       {maquina.status === 'manutencao' && '🟡 Manutenção'}
+                     </span>
+                   </div>
+                   
+                   <div className="machine-actions">
+                     <select 
+                       value={maquina.status}
+                       onChange={(e) => updateMaquinaStatus(maquina.id, e.target.value)}
+                       className="status-select"
+                     >
+                       <option value="disponivel">Disponível</option>
+                       <option value="em_uso">Em Uso</option>
+                       <option value="manutencao">Manutenção</option>
+                     </select>
+                     
+                     <button 
+                       className="delete-machine-btn"
+                       onClick={() => deleteMaquina(maquina.id)}
+                       title="Excluir máquina"
+                     >
+                       🗑️
+                     </button>
+                   </div>
+                 </div>
+               ))}
+             </div>
+           )}
+         </div>
+       </div>
 
-      {/* Modal de exclusão */}
-      <Modal
-        show={showDeleteModal}
-        onHide={closeDeleteModal}
-        {...modalCommonProps}
-        style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center' 
-        }}
-        dialogClassName="custom-modal-dialog"
-      >
-        <Modal.Header>
-          <Modal.Title>Confirmar Exclusão</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p>Tem certeza de que deseja excluir sua conta? Esta ação é irreversível.</p>
-        </Modal.Body>
-        <Modal.Footer className="laundry-modal-footer">
-          <Button type="button" variant="secondary" onClick={closeDeleteModal}>
-            Cancelar
-          </Button>
-          <Button variant="danger" onClick={confirmDelete}>
-            Excluir Conta
-          </Button>
-        </Modal.Footer>
-      </Modal>
+       {/* Modal de exclusão */}
+       <Modal
+         show={showDeleteModal}
+         onHide={closeDeleteModal}
+         {...modalCommonProps}
+         style={{ 
+           display: 'flex', 
+           alignItems: 'center', 
+           justifyContent: 'center' 
+         }}
+         dialogClassName="custom-modal-dialog"
+       >
+         <Modal.Header>
+           <Modal.Title>Confirmar Exclusão</Modal.Title>
+         </Modal.Header>
+         <Modal.Body>
+           <p>Tem certeza de que deseja excluir sua conta? Esta ação é irreversível.</p>
+         </Modal.Body>
+         <Modal.Footer className="laundry-modal-footer">
+           <Button type="button" variant="secondary" onClick={closeDeleteModal}>
+             Cancelar
+           </Button>
+           <Button variant="danger" onClick={confirmDelete}>
+             Excluir Conta
+           </Button>
+         </Modal.Footer>
+       </Modal>
 
-      {/* Modais de edição */}
-      <Modal
-        show={showEditModal}
-        onHide={closeEditModal}
-        {...modalCommonProps}
-        style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center' 
-        }}
-        dialogClassName="custom-modal-dialog"
-      >
-        <Modal.Header>
-          <Modal.Title>
-            {editContext === "proprietario" && fieldToEdit === "nome" && "Alterar Nome do Proprietário"}
-            {editContext === "proprietario" && fieldToEdit === "email" && "Alterar Email do Proprietário"}
-            {editContext === "proprietario" && fieldToEdit === "senha" && "Alterar Senha do Proprietário"}
-            {editContext === "lavanderia" && fieldToEdit === "nome" && "Alterar Nome da Lavanderia"}
-            {editContext === "lavanderia" && fieldToEdit === "endereco" && "Alterar Endereço da Lavanderia"}
-            {editContext === "lavanderia" && fieldToEdit === "telefone" && "Alterar Telefone"}
-          </Modal.Title>
-        </Modal.Header>
-        <form onSubmit={handleSave} className="modal-edit-form">
-          <Modal.Body>
-            <div className="input-group">
-              {editContext === "lavanderia" && fieldToEdit === "endereco" ? (
-                <AddressInput
-                  value={editValue}
-                  onChange={handleAddressChange}
-                  onCoordinatesChange={handleCoordinatesChange}
-                  placeholder="Digite o endereço completo ou CEP da lavanderia"
-                  required
-                />
-              ) : (
-                <input
-                  type={fieldToEdit === "senha" ? "password" : "text"}
-                  id={fieldToEdit}
-                  name={fieldToEdit}
-                  className="modal-input"
-                  placeholder={
-                    fieldToEdit === "senha"
-                      ? "Digite a nova senha"
-                      : fieldToEdit === "nome"
-                        ? "Digite o nome"
-                        : fieldToEdit === "email"
-                          ? "Digite o e-mail"
-                          : fieldToEdit === "endereco"
-                            ? "Digite o endereço"
-                            : "Digite o telefone"
-                  }
-                  value={editValue}
-                  onChange={handleChange}
-                  required
-                />
-              )}
-            </div>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button type="button" variant="secondary" onClick={closeEditModal}>
-              Cancelar
-            </Button>
-            <Button
-              variant="primary"
-              type="submit"
-              className={`save-modal-button ${isEditModalChanged ? "active" : ""}`}
-              disabled={!isEditModalChanged}
-            >
-              Salvar
-            </Button>
-          </Modal.Footer>
-        </form>
-      </Modal>
+       {/* Modais de edição */}
+       <Modal
+         show={showEditModal}
+         onHide={closeEditModal}
+         {...modalCommonProps}
+         style={{ 
+           display: 'flex', 
+           alignItems: 'center', 
+           justifyContent: 'center' 
+         }}
+         dialogClassName="custom-modal-dialog"
+       >
+         <Modal.Header>
+           <Modal.Title>
+             {editContext === "proprietario" && fieldToEdit === "nome" && "Alterar Nome do Proprietário"}
+             {editContext === "proprietario" && fieldToEdit === "email" && "Alterar Email do Proprietário"}
+             {editContext === "proprietario" && fieldToEdit === "senha" && "Alterar Senha do Proprietário"}
+             {editContext === "lavanderia" && fieldToEdit === "nome" && "Alterar Nome da Lavanderia"}
+             {editContext === "lavanderia" && fieldToEdit === "endereco" && "Alterar Endereço da Lavanderia"}
+             {editContext === "lavanderia" && fieldToEdit === "telefone" && "Alterar Telefone"}
+           </Modal.Title>
+         </Modal.Header>
+         <form onSubmit={handleSave} className="modal-edit-form">
+           <Modal.Body>
+             <div className="input-group">
+               {editContext === "lavanderia" && fieldToEdit === "endereco" ? (
+                 <AddressInput
+                   value={editValue}
+                   onChange={handleAddressChange}
+                   onCoordinatesChange={handleCoordinatesChange}
+                   placeholder="Digite o endereço completo ou CEP da lavanderia"
+                   required
+                 />
+               ) : (
+                 <input
+                   type={fieldToEdit === "senha" ? "password" : "text"}
+                   id={fieldToEdit}
+                   name={fieldToEdit}
+                   className="modal-input"
+                   placeholder={
+                     fieldToEdit === "senha"
+                       ? "Digite a nova senha"
+                       : fieldToEdit === "nome"
+                         ? "Digite o nome"
+                         : fieldToEdit === "email"
+                           ? "Digite o e-mail"
+                           : fieldToEdit === "endereco"
+                             ? "Digite o endereço"
+                             : "Digite o telefone"
+                   }
+                   value={editValue}
+                   onChange={handleChange}
+                   required
+                 />
+               )}
+             </div>
+           </Modal.Body>
+           <Modal.Footer>
+             <Button type="button" variant="secondary" onClick={closeEditModal}>
+               Cancelar
+             </Button>
+             <Button
+               variant="primary"
+               type="submit"
+               className={`save-modal-button ${isEditModalChanged ? "active" : ""}`}
+               disabled={!isEditModalChanged}
+             >
+               Salvar
+             </Button>
+           </Modal.Footer>
+         </form>
+       </Modal>
 
-      {/* Modal para adicionar máquina */}
-      <Modal
-        show={showAddMaquinaModal}
-        onHide={() => setShowAddMaquinaModal(false)}
-        {...modalCommonProps}
-        style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center' 
-        }}
-        dialogClassName="custom-modal-dialog"
-      >
-        <Modal.Header>
-          <Modal.Title>Adicionar Nova Máquina</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div className="input-group">
-            <label htmlFor="machineName">Nome da Máquina</label>
-            <input
-              type="text"
-              id="machineName"
-              className="modal-input"
-              placeholder="Ex: Máquina 01"
-              value={newMaquinaName}
-              onChange={(e) => setNewMaquinaName(e.target.value)}
-              required
-            />
-          </div>
-          <div className="input-group">
-            <label htmlFor="machineCapacity">Capacidade (opcional)</label>
-            <input
-              type="text"
-              id="machineCapacity"
-              className="modal-input"
-              placeholder="Ex: 8kg, 12kg"
-              value={newMaquinaCapacidade}
-              onChange={(e) => setNewMaquinaCapacidade(e.target.value)}
-            />
-          </div>
-          <div className="input-group">
-            <label htmlFor="machinePrice">Valor da Lavagem</label>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              id="machinePrice"
-              className="modal-input"
-              placeholder="Ex: 5.00"
-              value={newMaquinaValor}
-              onChange={(e) => setNewMaquinaValor(e.target.value)}
-            />
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button 
-            type="button" 
-            variant="secondary" 
-            onClick={() => setShowAddMaquinaModal(false)}
-          >
-            Cancelar
-          </Button>
-          <Button
-            variant="primary"
-            onClick={addMaquina}
-            disabled={!newMaquinaName.trim()}
-          >
-            Adicionar
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </div>
+       {/* Modal para adicionar máquina */}
+       <Modal
+         show={showAddMaquinaModal}
+         onHide={() => setShowAddMaquinaModal(false)}
+         {...modalCommonProps}
+         style={{ 
+           display: 'flex', 
+           alignItems: 'center', 
+           justifyContent: 'center' 
+         }}
+         dialogClassName="custom-modal-dialog"
+       >
+         <Modal.Header>
+           <Modal.Title>Adicionar Nova Máquina</Modal.Title>
+         </Modal.Header>
+         <Modal.Body>
+           <div className="input-group">
+             <label htmlFor="machineName">Nome da Máquina</label>
+             <input
+               type="text"
+               id="machineName"
+               className="modal-input"
+               placeholder="Ex: Máquina 01"
+               value={newMaquinaName}
+               onChange={(e) => setNewMaquinaName(e.target.value)}
+               required
+             />
+           </div>
+           <div className="input-group">
+             <label htmlFor="machineCapacity">Capacidade (opcional)</label>
+             <input
+               type="text"
+               id="machineCapacity"
+               className="modal-input"
+               placeholder="Ex: 8kg, 12kg"
+               value={newMaquinaCapacidade}
+               onChange={(e) => setNewMaquinaCapacidade(e.target.value)}
+             />
+           </div>
+           <div className="input-group">
+             <label htmlFor="machinePrice">Valor da Lavagem</label>
+             <input
+               type="number"
+               step="0.01"
+               min="0"
+               id="machinePrice"
+               className="modal-input"
+               placeholder="Ex: 5.00"
+               value={newMaquinaValor}
+               onChange={(e) => setNewMaquinaValor(e.target.value)}
+             />
+           </div>
+         </Modal.Body>
+         <Modal.Footer>
+           <Button 
+             type="button" 
+             variant="secondary" 
+             onClick={() => setShowAddMaquinaModal(false)}
+           >
+             Cancelar
+           </Button>
+           <Button
+             variant="primary"
+             onClick={addMaquina}
+             disabled={!newMaquinaName.trim()}
+           >
+             Adicionar
+           </Button>
+         </Modal.Footer>
+       </Modal>
+     </div>
   );
 };
 

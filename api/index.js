@@ -5,7 +5,7 @@ const cors = require('cors');
 const routes = require('./src/routes'); // Importa o roteador principal
 
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000;
 
 // Middlewares
 app.use(cors());
