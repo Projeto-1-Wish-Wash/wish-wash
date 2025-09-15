@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
 import { AiOutlineLock, AiOutlineLogout, AiOutlineMail, AiOutlineUser } from "react-icons/ai";
 import { BsPinMap, BsShop, BsTelephone, BsTrash3 } from "react-icons/bs";
-import { MdOutlineLocalLaundryService } from "react-icons/md";
+import { MdOutlineLocalLaundryService, MdSupportAgent } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import AddressInput from "../../components/AddressInput";
 import "./LaundryProfile.css";
@@ -426,6 +426,11 @@ const LaundryProfile = () => {
           <button className="laundry-option-item" onClick={() => openEditModal("lavanderia", "telefone")}>
             <BsTelephone className="laundry-option-icon" />
             <span>Alterar Telefone</span>
+          </button>
+
+          <button className="laundry-option-item" onClick={() => navigate("/support")}>
+            <MdSupportAgent className="laundry-option-icon" />
+            <span>Solicitar Suporte</span>
           </button>
 
           <button
