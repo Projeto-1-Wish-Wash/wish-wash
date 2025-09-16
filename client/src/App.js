@@ -2,7 +2,6 @@ import React from 'react';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import './App.css';
 // import 'bootstrap/dist/css/bootstrap.min.css';
-import PrivateRoute from './components/PrivateRoute';
 
 // Importando as páginas
 import CreateLaundry from './pages/CreateLaundry/CreateLaundry';
@@ -15,15 +14,27 @@ import Profile from './pages/Profile/Profile';
 import SignUp from './pages/SignUp/SignUp';
 import Support from './pages/Support/Support';
 
+// Helper para verificar se o usuário está autenticado
+const isAuthenticated = () => {
+  return localStorage.getItem('token') !== null;
+};
+
+// Helper para obter o tipo de usuário
+const getUserType = () => {
+  const user = localStorage.getItem('user');
+  if (user) {
+    const userData = JSON.parse(user);
+    return userData.tipo_usuario;
+  }
+  return null;
+};
+
+// Componente de Rota Privada
+const PrivateRoute = ({ children }) => {
+  return isAuthenticated() ? children : <Navigate to="/login" />;
+};
 
 function App() {
-
-  const isAuthenticated = () => localStorage.getItem('token') !== null;
-  const getUserType = () => {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user).tipo_usuario : null;
-  };
-
   return (
     <Router>
       <div className="App">
@@ -52,7 +63,7 @@ function App() {
           <Route 
             path="/dashboard" 
             element={
-              <PrivateRoute allowedRoles={['cliente']}>
+              <PrivateRoute>
                 <Dashboard />
               </PrivateRoute>
             } 
@@ -60,7 +71,7 @@ function App() {
           <Route 
             path="/map" 
             element={
-              <PrivateRoute allowedRoles={['cliente']}>
+              <PrivateRoute>
                 <Map />
               </PrivateRoute>
             } 
@@ -68,7 +79,7 @@ function App() {
           <Route 
             path="/history" 
             element={
-              <PrivateRoute allowedRoles={['cliente']}>
+              <PrivateRoute>
                 <History />
               </PrivateRoute>
             } 
@@ -76,7 +87,7 @@ function App() {
            <Route 
             path="/profile" 
             element={
-              <PrivateRoute allowedRoles={['cliente']}>
+              <PrivateRoute>
                 <Profile />
               </PrivateRoute>
             } 
@@ -84,7 +95,7 @@ function App() {
           <Route 
             path="/laundry-profile" 
             element={
-              <PrivateRoute allowedRoles={['proprietario']}>
+              <PrivateRoute>
                 <LaundryProfile />
               </PrivateRoute>
             } 
