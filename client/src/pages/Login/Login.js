@@ -38,7 +38,6 @@ const Login = () => {
       } else {
         navigate('/map');
       }
-      window.location.reload();
 
     } catch (err) {
       setError(err.message);
