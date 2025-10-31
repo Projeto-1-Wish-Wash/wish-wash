@@ -18,6 +18,12 @@ router.get('/lavanderia/:lavanderiaId/status', maquinaController.getStatusCount)
 // READ: Buscar máquina por ID
 router.get('/:id', maquinaController.getMaquinaById);
 
+// READ: Horários disponíveis (slots) por máquina/data
+router.get('/:id/horarios', maquinaController.listarHorarios);
+
+// READ: Status calculado por data/hora (ou agora se omitido)
+router.get('/:id/status-calculado', maquinaController.statusEmHorario);
+
 // UPDATE: Atualizar status da máquina (proprietário pode tudo, cliente só pode reservar)
 router.put('/:id/status', authenticateToken, maquinaController.updateStatus);
 

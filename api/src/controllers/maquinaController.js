@@ -1,5 +1,6 @@
 const maquinaService = require('../services/maquinaService');
 const historicoService = require('../services/historicoService');
+const AgendamentoService = require('../services/agendamentoService');
 
 class MaquinaController {
   /**
@@ -349,6 +350,64 @@ class MaquinaController {
       res.status(500).json({
         error: 'Erro interno do servidor'
       });
+    }
+  }
+
+  /**
+   * GET /api/maquinas/:id/horarios?date=YYYY-MM-DD&intervaloMin=60
+   * Proxy para listagem de slots disponíveis por máquina/data
+   */
+  async listarHorarios(req, res) {
+    try {
+      const { id } = req.params;
+      const { date, intervaloMin } = req.query;
+      if (!id || isNaN(id)) {
+        return res.status(400).json({ error: 'ID da máquina deve ser um número válido' });
+      }
+      if (!date) {
+        return res.status(400).json({ error: 'Parâmetro date é obrigatório (YYYY-MM-DD)' });
+      }
+      const service = new AgendamentoService();
+      const resp = await service.listarSlotsDisponiveis(Number(id), { date, intervaloMin: Number(intervaloMin) || 60 });
+      return res.json({ success: true, data: resp });
+    } catch (error) {
+      return res.status(400).json({ success: false, message: error.message });
+    }
+  }
+
+  /**
+   * GET /api/maquinas/:id/status?at=ISO_DATETIME
+   * Retorna status calculado baseado em agendamentos ativos na data/hora informada (ou agora)
+   */
+  async statusEmHorario(req, res) {
+    try {
+      const { id } = req.params;
+      const { at } = req.query;
+      if (!id || isNaN(id)) {
+        return res.status(400).json({ error: 'ID da máquina deve ser um número válido' });
+      }
+      const momento = at ? new Date(at) : new Date();
+      if (isNaN(momento.getTime())) {
+        return res.status(400).json({ error: 'Parâmetro at inválido' });
+      }
+
+      const prisma = require('../../prisma/client');
+      const maquina = await prisma.maquinaDeLavar.findUnique({ where: { id: Number(id) } });
+      if (!maquina) return res.status(404).json({ error: 'Máquina não encontrada' });
+
+      const agendamento = await prisma.agendamento.findFirst({
+        where: {
+          maquina_id: Number(id),
+          status: 'ativo',
+          inicio: { lte: momento },
+          fim: { gt: momento }
+        }
+      });
+
+      const statusCalculado = agendamento ? 'em_uso' : 'disponivel';
+      return res.json({ success: true, data: { maquina_id: Number(id), at: momento.toISOString(), status: statusCalculado } });
+    } catch (error) {
+      return res.status(500).json({ success: false, message: 'Erro ao calcular status' });
     }
   }
 }
