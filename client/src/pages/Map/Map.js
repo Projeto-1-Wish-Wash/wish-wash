@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import AgendamentoModal from "../../components/AgendamentoModal";
 import "./Map.css";
 
 const Map = () => {
@@ -23,6 +24,9 @@ const Map = () => {
   const userMarkerRef = useRef(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [lavanderiasMaquinas, setLavanderiasMaquinas] = useState({});
+  const [showAgendamentoModal, setShowAgendamentoModal] = useState(false);
+  const [selectedMaquina, setSelectedMaquina] = useState(null);
+  const [selectedLavanderia, setSelectedLavanderia] = useState(null);
 
   // Buscar dados do usuário logado
   useEffect(() => {
@@ -644,43 +648,38 @@ const Map = () => {
     return [];
   };
 
-  // Função para reservar uma máquina (alterar status para em_uso)
-  const reservarMaquina = async (maquinaId, lavanderiaId) => {
+  // Função para abrir modal de agendamento
+  const abrirModalAgendamento = (maquinaId, lavanderiaId) => {
     if (!maquinaId || !lavanderiaId) {
-      alert("Dados inválidos para reserva");
+      alert("Dados inválidos para agendamento");
       return;
     }
 
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("Você precisa estar logado para reservar uma máquina");
-        return;
-      }
-
-      const response = await fetch(`/api/maquinas/${maquinaId}/status`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status: "em_uso" }),
-      });
-
-      if (response.ok) {
-        // Recarregar máquinas para atualizar o status
-        await fetchMaquinasLavanderia(lavanderiaId);
-        alert("Máquina reservada com sucesso!");
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        alert(
-          errorData.error || `Erro ao reservar máquina (${response.status})`,
-        );
-      }
-    } catch (error) {
-      console.error("Erro ao reservar máquina:", error);
-      alert("Erro de conexão ao reservar máquina. Tente novamente.");
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Você precisa estar logado para agendar uma máquina");
+      return;
     }
+
+    // Buscar dados da máquina e lavanderia
+    const maquinas = lavanderiasMaquinas[lavanderiaId] || [];
+    const maquina = maquinas.find((m) => m.id === maquinaId);
+    const lavanderia = lavanderias.find((l) => l.id === lavanderiaId);
+
+    if (!maquina) {
+      alert("Máquina não encontrada");
+      return;
+    }
+
+    setSelectedMaquina(maquina);
+    setSelectedLavanderia(lavanderia || { id: lavanderiaId });
+    setShowAgendamentoModal(true);
+  };
+
+  // Função para reservar uma máquina (alterar status para em_uso) - mantida para compatibilidade
+  const reservarMaquina = async (maquinaId, lavanderiaId) => {
+    // Redirecionar para o modal de agendamento
+    abrirModalAgendamento(maquinaId, lavanderiaId);
   };
 
   // Função para gerar HTML das máquinas (recebe máquinas diretamente)
@@ -726,8 +725,8 @@ const Map = () => {
             ${
               status === "disponivel"
                 ? `<button onclick="if(window.reservarMaquina) window.reservarMaquina(${maquina.id}, ${lavanderiaId})" 
-                style="background: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 3px; font-size: 11px; cursor: pointer; font-weight: 500;">
-                Reservar
+                style="background: #3b82f6; color: white; border: none; padding: 4px 8px; border-radius: 3px; font-size: 11px; cursor: pointer; font-weight: 500;">
+                Agendar
               </button>`
                 : `<span style="background: #e9ecef; color: #6c757d; padding: 4px 8px; border-radius: 3px; font-size: 11px;">
                 ${status === "em_uso" ? "Ocupada" : "Manutenção"}
@@ -794,8 +793,8 @@ const Map = () => {
             ${
               status === "disponivel"
                 ? `<button onclick="if(window.reservarMaquina) window.reservarMaquina(${maquina.id}, ${lavanderiaId})" 
-                style="background: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 3px; font-size: 11px; cursor: pointer; font-weight: 500;">
-                Reservar
+                style="background: #3b82f6; color: white; border: none; padding: 4px 8px; border-radius: 3px; font-size: 11px; cursor: pointer; font-weight: 500;">
+                Agendar
               </button>`
                 : `<span style="background: #e9ecef; color: #6c757d; padding: 4px 8px; border-radius: 3px; font-size: 11px;">
                 ${status === "em_uso" ? "Ocupada" : "Manutenção"}
@@ -904,6 +903,25 @@ const Map = () => {
           ))}
         </div>
       </div>
+
+      {/* Modal de Agendamento */}
+      <AgendamentoModal
+        isOpen={showAgendamentoModal}
+        onClose={() => {
+          setShowAgendamentoModal(false);
+          setSelectedMaquina(null);
+          setSelectedLavanderia(null);
+        }}
+        maquina={selectedMaquina}
+        lavanderia={selectedLavanderia}
+        onSuccess={async (agendamento) => {
+          // Recarregar máquinas após agendamento bem-sucedido
+          if (selectedLavanderia?.id) {
+            await fetchMaquinasLavanderia(selectedLavanderia.id);
+          }
+          alert("Agendamento realizado com sucesso!");
+        }}
+      />
     </div>
   );
 };
