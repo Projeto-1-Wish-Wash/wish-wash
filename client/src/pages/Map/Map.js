@@ -10,6 +10,7 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AgendamentoModal from "../../components/AgendamentoModal";
+import PagamentoModal from "../../components/PagamentoModal";
 import "./Map.css";
 
 const Map = () => {
@@ -27,6 +28,8 @@ const Map = () => {
   const [showAgendamentoModal, setShowAgendamentoModal] = useState(false);
   const [selectedMaquina, setSelectedMaquina] = useState(null);
   const [selectedLavanderia, setSelectedLavanderia] = useState(null);
+  const [showPagamentoModal, setShowPagamentoModal] = useState(false);
+  const [agendamentoCriado, setAgendamentoCriado] = useState(null);
 
   // Buscar dados do usuário logado
   useEffect(() => {
@@ -915,11 +918,41 @@ const Map = () => {
         maquina={selectedMaquina}
         lavanderia={selectedLavanderia}
         onSuccess={async (agendamento) => {
-          // Recarregar máquinas após agendamento bem-sucedido
+          // Salvar agendamento criado e abrir modal de pagamento
+          setAgendamentoCriado(agendamento);
+          setShowAgendamentoModal(false);
+          
+          // Se a máquina tem valor, abrir modal de pagamento
+          if (selectedMaquina?.valor_lavagem && selectedMaquina.valor_lavagem > 0) {
+            setShowPagamentoModal(true);
+          } else {
+            // Se não tem valor, apenas recarregar máquinas
+            if (selectedLavanderia?.id) {
+              await fetchMaquinasLavanderia(selectedLavanderia.id);
+            }
+            alert("Agendamento realizado com sucesso!");
+          }
+        }}
+      />
+
+      {/* Modal de Pagamento */}
+      <PagamentoModal
+        isOpen={showPagamentoModal}
+        onClose={() => {
+          setShowPagamentoModal(false);
+          setAgendamentoCriado(null);
+        }}
+        agendamento={agendamentoCriado}
+        maquina={selectedMaquina}
+        lavanderia={selectedLavanderia}
+        onSuccess={async (resultado) => {
+          // Recarregar máquinas após pagamento bem-sucedido
           if (selectedLavanderia?.id) {
             await fetchMaquinasLavanderia(selectedLavanderia.id);
           }
-          alert("Agendamento realizado com sucesso!");
+          setShowPagamentoModal(false);
+          setAgendamentoCriado(null);
+          alert("Pagamento realizado com sucesso! Seu agendamento está confirmado.");
         }}
       />
     </div>
