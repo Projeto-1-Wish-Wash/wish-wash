@@ -27,4 +27,18 @@ router.get('/usuario/:usuarioId', authenticateToken, historicoController.getHist
  */
 router.put('/:id/avaliar', authenticateToken, historicoController.avaliarHistorico);
 
+/**
+ * GET /api/historico-lavagens/maquina/:maquinaId/data/:data
+ * Busca as reservas de uma máquina específica para uma data
+ * Requer autenticação (normalmente usado pelo proprietário)
+ */
+router.get('/maquina/:maquinaId/data/:data', authenticateToken, historicoController.getReservasByMaquinaEData);
+
+/**
+ * DELETE /api/historico-lavagens/:id
+ * Deleta/libera uma reserva específica
+ * Requer autenticação (apenas proprietários podem liberar reservas de suas lavanderias)
+ */
+router.delete('/:id', authenticateToken, historicoController.deleteHistorico);
+
 module.exports = router;

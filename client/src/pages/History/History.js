@@ -199,6 +199,9 @@ function History() {
             <div key={item.id} className="history-item">
               <h2>{nomeLavanderia}</h2>
               <p><strong>Data:</strong> {dataFormatada}</p>
+              {item.horario_reserva && (
+                <p><strong>Horário:</strong> ⏰ {item.horario_reserva}</p>
+              )}
               <p><strong>Máquina:</strong> {nomeMaquina}</p>
               {valorFormatado !== null && (
                 <p className="item-valor"><strong>Valor:</strong> R$ {valorFormatado}</p>

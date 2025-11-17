@@ -14,6 +14,7 @@ class HistoricoService {
    * @param {number} historicoData.lavanderia_id - ID da lavanderia
    * @param {number|null} historicoData.maquina_id - ID da máquina (opcional)
    * @param {Date|string|null} historicoData.data - Data e hora da lavagem (padrão: agora)
+   * @param {string|null} historicoData.horario_reserva - Horário reservado (formato "HH:MM")
    * @param {number|null} historicoData.valor - Valor cobrado pela lavagem
    * @returns {Promise<Object>} Registro criado
    */
@@ -23,6 +24,7 @@ class HistoricoService {
       lavanderia_id,
       maquina_id = null,
       data = new Date(), // Data e hora da lavagem
+      horario_reserva = null, // Horário reservado
       valor = null
     } = historicoData;
 
@@ -39,6 +41,7 @@ class HistoricoService {
         lavanderia_id: parsedLavanderiaId,
         maquina_id: parsedMaquinaId,
         data: data instanceof Date ? data : new Date(data),
+        horario_reserva: horario_reserva,
         valor: valor !== null && valor !== undefined ? parseFloat(valor) : null
       },
       include: {
@@ -214,6 +217,115 @@ class HistoricoService {
     });
 
     return historicos;
+  }
+
+  /**
+   * Retorna as reservas de uma máquina específica para uma data específica
+   *
+   * @param {number} maquinaId - ID da máquina
+   * @param {Date|string} data - Data para buscar as reservas (formato YYYY-MM-DD)
+   * @returns {Promise<Array>} Lista de reservas com horários
+   */
+  async getReservasByMaquinaEData(maquinaId, data) {
+    const parsedMaquinaId = parseInt(maquinaId);
+    
+    // Criar data no timezone de São Paulo (Brasil)
+    // Parse da data recebida (YYYY-MM-DD)
+    const [ano, mes, dia] = data.split('-').map(Number);
+    
+    // Criar data com timezone do Brasil (UTC-3)
+    // Usamos Date.UTC para criar uma data UTC e ajustamos para o Brasil
+    const dataInicio = new Date(ano, mes - 1, dia, 0, 0, 0, 0);
+    const dataFim = new Date(ano, mes - 1, dia, 23, 59, 59, 999);
+
+    console.log('🔍 Buscando reservas:', {
+      maquinaId: parsedMaquinaId,
+      dataRecebida: data,
+      dataInicio: dataInicio.toISOString(),
+      dataFim: dataFim.toISOString()
+    });
+
+    const reservas = await prisma.historicoLavagem.findMany({
+      where: {
+        maquina_id: parsedMaquinaId,
+        data: {
+          gte: dataInicio,
+          lte: dataFim
+        },
+        horario_reserva: {
+          not: null
+        }
+      },
+      select: {
+        id: true,
+        horario_reserva: true,
+        data: true,
+        usuario: {
+          select: {
+            id: true,
+            nome: true
+          }
+        }
+      },
+      orderBy: {
+        horario_reserva: 'asc'
+      }
+    });
+
+    console.log('✅ Reservas encontradas:', reservas.length);
+    if (reservas.length > 0) {
+      console.log('📋 Detalhes das reservas:', reservas.map(r => ({
+        id: r.id,
+        horario: r.horario_reserva,
+        usuario: r.usuario?.nome
+      })));
+    }
+
+    return reservas;
+  }
+
+  /**
+   * Deleta um registro de histórico/reserva (usado pelo proprietário para liberar slots)
+   *
+   * @param {number} historicoId - ID do histórico a deletar
+   * @param {number} userId - ID do usuário que está deletando (para verificação)
+   * @param {string} userType - Tipo do usuário (proprietario ou cliente)
+   * @returns {Promise<Object>} Histórico deletado
+   */
+  async deleteHistorico(historicoId, userId, userType) {
+    const parsedId = parseInt(historicoId);
+
+    // Buscar o histórico para verificar permissões
+    const historico = await prisma.historicoLavagem.findUnique({
+      where: { id: parsedId },
+      include: {
+        lavanderia: {
+          select: {
+            proprietario_id: true
+          }
+        }
+      }
+    });
+
+    if (!historico) {
+      throw new Error('Reserva não encontrada');
+    }
+
+    // Verificar se é o proprietário da lavanderia
+    if (userType === 'proprietario') {
+      if (historico.lavanderia.proprietario_id !== userId) {
+        throw new Error('Você não tem permissão para liberar esta reserva');
+      }
+    } else {
+      throw new Error('Apenas proprietários podem liberar reservas');
+    }
+
+    // Deletar o histórico
+    const historicoDeleted = await prisma.historicoLavagem.delete({
+      where: { id: parsedId }
+    });
+
+    return historicoDeleted;
   }
 }
 

@@ -359,7 +359,8 @@
   .machine-actions {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    flex-wrap: wrap;
   }
   
   .status-select {
@@ -431,23 +432,450 @@
       align-items: stretch;
     }
     
-    .machine-item {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 12px;
-    }
-    
-    .machine-actions {
-      justify-content: space-between;
-    }
-    
-    .status-select {
-      flex: 1;
-    }
+  .machine-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .machine-actions {
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  
+  .status-select {
+    flex: 1;
+    min-width: 120px;
+  }
+  
+  .view-schedule-btn {
+    flex-shrink: 0;
+  }
   }
 
 @media (max-width: 720px) {
   .laundry-profile-content-box {
     width: 375px;
+  }
+}
+
+/* Botão de Ver Horários */
+.view-schedule-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.view-schedule-btn:hover {
+  background: #1d4ed8;
+}
+
+/* Modal de Horários */
+.horarios-modal-dialog {
+  max-width: 700px !important;
+  width: 95% !important;
+}
+
+.horarios-modal-body {
+  padding: 20px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* Seletor de Data */
+.date-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+/* Estatísticas de Horários */
+.horarios-stats {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 15px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.reservado-count {
+  color: #fecaca;
+}
+
+.livre-count {
+  color: #a7f3d0;
+}
+
+.date-selector label {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.date-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.date-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 4px rgba(37, 99, 235, 0.3);
+}
+
+/* Loading de Horários */
+.loading-horarios {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #6c757d;
+}
+
+.loading-horarios .spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top: 4px solid #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+.loading-horarios p {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+/* Grid de Horários */
+.horarios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 25px;
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* Estilo da scrollbar para melhor visualização */
+.horarios-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.horarios-grid::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.horarios-grid::-webkit-scrollbar-thumb {
+  background: #2563eb;
+  border-radius: 10px;
+}
+
+.horarios-grid::-webkit-scrollbar-thumb:hover {
+  background: #1d4ed8;
+}
+
+/* Slot de Horário */
+.horario-slot {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 14px;
+  transition: all 0.2s;
+}
+
+.horario-slot.livre {
+  border-color: #10b981;
+  background: #f0fdf4;
+}
+
+.horario-slot.reservado {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.horario-slot.livre:hover {
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+  transform: translateY(-2px);
+}
+
+.horario-slot.reservado:hover {
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Tempo do Horário */
+.horario-time {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.time-icon {
+  font-size: 1.2rem;
+}
+
+.time-text {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #333;
+}
+
+/* Informações do Horário */
+.horario-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.livre-badge {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.reservado-badge {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.cliente-info {
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.disponivel-text {
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Botão de Liberar Reserva */
+.liberar-reserva-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.liberar-reserva-btn:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+}
+
+.liberar-reserva-btn:active {
+  transform: translateY(0);
+}
+
+/* Legenda de Horários */
+.horarios-legenda {
+  margin-top: 25px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.horarios-legenda h5 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.status-atual {
+  margin-bottom: 12px;
+}
+
+.status-indicator {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.status-indicator.disponivel {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-indicator.em_uso {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-indicator.manutencao {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.nota-info {
+  margin: 10px 0 0 0;
+  padding: 10px;
+  background: #eff6ff;
+  border-left: 3px solid #2563eb;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: #1e40af;
+  line-height: 1.5;
+}
+
+.nota-info strong {
+  color: #1e3a8a;
+}
+
+/* Responsividade para o modal de horários */
+@media (max-width: 768px) {
+  .horarios-modal-dialog {
+    max-width: 98% !important;
+    margin: 0.5rem !important;
+  }
+
+  .horarios-modal-body {
+    padding: 15px;
+    max-height: 60vh;
+  }
+
+  .horarios-stats {
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .stat-item {
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+  }
+
+  .stat-value {
+    font-size: 1.2rem;
+  }
+
+  .horarios-grid {
+    grid-template-columns: 1fr;
+    max-height: 400px;
+    gap: 10px;
+  }
+
+  .date-selector {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .view-schedule-btn {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+
+  .machine-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .status-select {
+    width: 100%;
+  }
+
+  .horario-slot {
+    padding: 12px;
+  }
+
+  .time-text {
+    font-size: 1rem;
+  }
+}
+
+/* Ajustes para mobile nas ações das máquinas */
+@media (max-width: 480px) {
+  .machine-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .view-schedule-btn,
+  .status-select,
+  .delete-machine-btn {
+    width: 100%;
   }
 }

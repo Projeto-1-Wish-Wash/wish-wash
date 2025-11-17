@@ -128,6 +128,74 @@ class HistoricoController {
       });
     }
   }
+
+  /**
+   * Busca as reservas de uma máquina para uma data específica
+   * Rota: GET /api/historico-lavagens/maquina/:maquinaId/data/:data
+   */
+  async getReservasByMaquinaEData(req, res) {
+    try {
+      const { maquinaId, data } = req.params;
+
+      // Validação básica
+      if (!maquinaId || !data) {
+        return res.status(400).json({
+          error: 'ID da máquina e data são obrigatórios'
+        });
+      }
+
+      const reservas = await historicoService.getReservasByMaquinaEData(maquinaId, data);
+
+      res.status(200).json({
+        reservas: reservas,
+        total: reservas.length
+      });
+    } catch (error) {
+      console.error('Erro ao buscar reservas:', error);
+      res.status(500).json({
+        error: 'Erro interno do servidor'
+      });
+    }
+  }
+
+  /**
+   * Deleta/libera uma reserva específica (usado pelo proprietário)
+   * Rota: DELETE /api/historico-lavagens/:id
+   */
+  async deleteHistorico(req, res) {
+    try {
+      const { id } = req.params;
+      const userId = req.user?.userId;
+      const userType = req.user?.tipo_usuario;
+
+      if (!userId || !userType) {
+        return res.status(401).json({
+          error: 'Usuário não autenticado'
+        });
+      }
+
+      const historicoDeleted = await historicoService.deleteHistorico(
+        parseInt(id),
+        userId,
+        userType
+      );
+
+      res.status(200).json({
+        message: 'Reserva liberada com sucesso',
+        historico: historicoDeleted
+      });
+    } catch (error) {
+      console.error('Erro ao deletar histórico:', error);
+
+      if (error.message.includes('não encontrada') || error.message.includes('permissão')) {
+        return res.status(403).json({ error: error.message });
+      }
+
+      res.status(500).json({
+        error: 'Erro interno do servidor'
+      });
+    }
+  }
 }
 
 module.exports = new HistoricoController();

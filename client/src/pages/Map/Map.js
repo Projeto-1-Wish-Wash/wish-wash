@@ -415,6 +415,7 @@ const Map = () => {
       // Expor funções globalmente para uso nos botões HTML
       if (typeof window !== "undefined") {
         window.reservarMaquina = reservarMaquina;
+        window.confirmarReserva = confirmarReservaComHorario;
         window.recarregarLavanderias = recarregarLavanderias;
         window.tracarRota = traceRouteToLavanderia;
       }
@@ -429,11 +430,15 @@ const Map = () => {
           if (window.reservarMaquina) {
             delete window.reservarMaquina;
           }
+          if (window.confirmarReserva) {
+            delete window.confirmarReserva;
+          }
           if (window.recarregarLavanderias) {
             delete window.recarregarLavanderias;
           }
-          if (window.reservarMaquina) delete window.reservarMaquina;
-          if (window.tracarRota) delete window.tracarRota;
+          if (window.tracarRota) {
+            delete window.tracarRota;
+          }
         }
       } catch (error) {
         console.warn("Erro no cleanup:", error);
@@ -643,9 +648,114 @@ const Map = () => {
     return [];
   };
 
-  // Função para reservar uma máquina (alterar status para em_uso)
-  const reservarMaquina = async (maquinaId, lavanderiaId) => {
-    if (!maquinaId || !lavanderiaId) {
+  // Função para gerar os slots de horário (8h às 18h)
+  const gerarHorariosDisponiveis = () => {
+    const horarios = [];
+    for (let hora = 8; hora < 18; hora++) {
+      horarios.push(`${hora.toString().padStart(2, '0')}:00`);
+    }
+    return horarios;
+  };
+
+  // Função para exibir modal de seleção de horário
+  const exibirModalHorario = (maquinaId, lavanderiaId) => {
+    const horarios = gerarHorariosDisponiveis();
+    
+    // Criar HTML do modal com os horários
+    const horariosHTML = horarios.map(horario => `
+      <button 
+        onclick="if(window.confirmarReserva) window.confirmarReserva(${maquinaId}, ${lavanderiaId}, '${horario}')"
+        style="
+          background: #2563eb; 
+          color: white; 
+          border: none; 
+          padding: 10px 16px; 
+          border-radius: 6px; 
+          font-size: 14px; 
+          cursor: pointer; 
+          margin: 4px;
+          font-weight: 500;
+          transition: all 0.2s;
+          min-width: 80px;
+        "
+        onmouseover="this.style.background='#1d4ed8'"
+        onmouseout="this.style.background='#2563eb'"
+      >
+        ${horario}
+      </button>
+    `).join('');
+
+    const modalHTML = `
+      <div id="modal-horario" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+      ">
+        <div style="
+          background: white;
+          padding: 24px;
+          border-radius: 12px;
+          max-width: 500px;
+          width: 90%;
+          max-height: 80vh;
+          overflow-y: auto;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        ">
+          <h3 style="margin: 0 0 16px 0; color: #2563eb; font-size: 20px; text-align: center;">
+            ⏰ Selecione o Horário
+          </h3>
+          <p style="margin: 0 0 20px 0; color: #6b7280; font-size: 14px; text-align: center;">
+            Escolha um horário disponível entre 8h e 18h
+          </p>
+          <div style="
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+          ">
+            ${horariosHTML}
+          </div>
+          <button 
+            onclick="document.getElementById('modal-horario').remove()"
+            style="
+              background: #e5e7eb;
+              color: #374151;
+              border: none;
+              padding: 10px 20px;
+              border-radius: 6px;
+              font-size: 14px;
+              cursor: pointer;
+              width: 100%;
+              font-weight: 500;
+            "
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    `;
+
+    // Remover modal anterior se existir
+    const modalExistente = document.getElementById('modal-horario');
+    if (modalExistente) {
+      modalExistente.remove();
+    }
+
+    // Inserir modal no DOM
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+  };
+
+  // Função para confirmar a reserva com o horário selecionado
+  const confirmarReservaComHorario = async (maquinaId, lavanderiaId, horario) => {
+    if (!maquinaId || !lavanderiaId || !horario) {
       alert("Dados inválidos para reserva");
       return;
     }
@@ -663,13 +773,20 @@ const Map = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ status: "em_uso" }),
+        body: JSON.stringify({ 
+          status: "em_uso",
+          horario_reserva: horario 
+        }),
       });
 
       if (response.ok) {
+        // Fechar modal
+        const modal = document.getElementById('modal-horario');
+        if (modal) modal.remove();
+
         // Recarregar máquinas para atualizar o status
         await fetchMaquinasLavanderia(lavanderiaId);
-        alert("Máquina reservada com sucesso!");
+        alert(`Máquina reservada com sucesso para ${horario}!`);
       } else {
         const errorData = await response.json().catch(() => ({}));
         alert(
@@ -680,6 +797,11 @@ const Map = () => {
       console.error("Erro ao reservar máquina:", error);
       alert("Erro de conexão ao reservar máquina. Tente novamente.");
     }
+  };
+
+  // Função wrapper para compatibilidade (agora abre o modal)
+  const reservarMaquina = (maquinaId, lavanderiaId) => {
+    exibirModalHorario(maquinaId, lavanderiaId);
   };
 
   // Função para gerar HTML das máquinas (recebe máquinas diretamente)

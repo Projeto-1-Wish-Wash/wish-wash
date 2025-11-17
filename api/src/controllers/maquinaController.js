@@ -110,7 +110,7 @@ class MaquinaController {
   async updateStatus(req, res) {
     try {
       const { id } = req.params;
-      const { status } = req.body;
+      const { status, horario_reserva } = req.body;
 
       if (!id || isNaN(id)) {
         return res.status(400).json({
@@ -180,6 +180,7 @@ class MaquinaController {
             lavanderia_id: maquina.lavanderia.id,
             maquina_id: parseInt(id),
             data: horaLavagem, // Data e hora da lavagem
+            horario_reserva: horario_reserva, // Horário selecionado pelo cliente
             valor: maquina.valor_lavagem
           });
           

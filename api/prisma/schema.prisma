@@ -129,6 +129,9 @@ model HistoricoLavagem {
   /// Data e hora em que a lavagem foi realizada
   data           DateTime         @default(now())
 
+  /// Horário reservado para a lavagem (formato: "08:00", "09:00", etc.)
+  horario_reserva String?
+
   /// Valor cobrado em reais pela lavagem
   valor          Float?
 

@@ -36,6 +36,13 @@ const LaundryProfile = () => {
   const [newMaquinaName, setNewMaquinaName] = useState("");
   const [newMaquinaCapacidade, setNewMaquinaCapacidade] = useState("");
   const [newMaquinaValor, setNewMaquinaValor] = useState("");
+  
+  // Estados para gerenciamento de horários
+  const [showHorariosModal, setShowHorariosModal] = useState(false);
+  const [maquinaSelecionada, setMaquinaSelecionada] = useState(null);
+  const [dataSelecionada, setDataSelecionada] = useState(new Date().toISOString().split('T')[0]);
+  const [reservasDosDia, setReservasDosDia] = useState([]);
+  const [loadingReservas, setLoadingReservas] = useState(false);
 
   const navigate = useNavigate();
 
@@ -272,6 +279,110 @@ const LaundryProfile = () => {
     }
   };
 
+  // Função para gerar slots de horário (8h às 18h)
+  const gerarHorariosDisponiveis = () => {
+    const horarios = [];
+    for (let hora = 8; hora < 18; hora++) {
+      horarios.push(`${hora.toString().padStart(2, '0')}:00`);
+    }
+    return horarios;
+  };
+
+  // Função para buscar reservas de uma máquina em uma data específica
+  const fetchReservasMaquina = async (maquinaId, data) => {
+    setLoadingReservas(true);
+    try {
+      const { token } = getUserAuthData();
+      console.log('📅 Buscando reservas para:', { maquinaId, data });
+      
+      const response = await fetch(
+        `${API_URL}/api/historico-lavagens/maquina/${maquinaId}/data/${data}`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      if (response.ok) {
+        const responseData = await response.json();
+        console.log('✅ Reservas recebidas:', responseData);
+        setReservasDosDia(responseData.reservas || []);
+      } else {
+        console.error('❌ Erro ao buscar reservas:', response.status);
+        setReservasDosDia([]);
+      }
+    } catch (error) {
+      console.error('💥 Erro ao buscar reservas:', error);
+      setReservasDosDia([]);
+    } finally {
+      setLoadingReservas(false);
+    }
+  };
+
+  // Função para abrir modal de horários
+  const abrirModalHorarios = async (maquina) => {
+    setMaquinaSelecionada(maquina);
+    setShowHorariosModal(true);
+    await fetchReservasMaquina(maquina.id, dataSelecionada);
+  };
+
+  // Função para fechar modal de horários
+  const fecharModalHorarios = () => {
+    setShowHorariosModal(false);
+    setMaquinaSelecionada(null);
+    setReservasDosDia([]);
+  };
+
+  // Função para verificar se um horário está reservado
+  const verificarHorarioReservado = (horario) => {
+    console.log('🔍 Verificando horário:', horario);
+    console.log('📋 Reservas do dia:', reservasDosDia);
+    const reserva = reservasDosDia.find(r => {
+      console.log('  Comparando:', r.horario_reserva, '===', horario);
+      return r.horario_reserva === horario;
+    });
+    console.log('✅ Reserva encontrada para', horario, ':', reserva);
+    return reserva;
+  };
+
+  // Função para alterar data selecionada
+  const handleDataChange = async (e) => {
+    const novaData = e.target.value;
+    setDataSelecionada(novaData);
+    if (maquinaSelecionada) {
+      await fetchReservasMaquina(maquinaSelecionada.id, novaData);
+    }
+  };
+
+  // Função para liberar/cancelar uma reserva específica
+  const liberarReserva = async (reservaId) => {
+    // eslint-disable-next-line no-restricted-globals
+    if (!confirm('Tem certeza que deseja liberar esta reserva?')) {
+      return;
+    }
+
+    try {
+      const { token } = getUserAuthData();
+      const response = await fetch(`${API_URL}/api/historico-lavagens/${reservaId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        alert('Reserva liberada com sucesso!');
+        // Recarregar reservas
+        if (maquinaSelecionada) {
+          await fetchReservasMaquina(maquinaSelecionada.id, dataSelecionada);
+        }
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Erro ao liberar reserva');
+      }
+    } catch (error) {
+      console.error('Erro ao liberar reserva:', error);
+      alert('Erro ao liberar reserva');
+    }
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     if (!isEditModalChanged) return;
@@ -493,6 +604,14 @@ const LaundryProfile = () => {
                   </div>
                   
                   <div className="machine-actions">
+                    <button 
+                      className="view-schedule-btn"
+                      onClick={() => abrirModalHorarios(maquina)}
+                      title="Ver horários reservados"
+                    >
+                      📅 Horários
+                    </button>
+                    
                     <select 
                       value={maquina.status}
                       onChange={(e) => updateMaquinaStatus(maquina.id, e.target.value)}
@@ -686,6 +805,125 @@ const LaundryProfile = () => {
             disabled={!newMaquinaName.trim()}
           >
             Adicionar
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Modal de Gerenciamento de Horários */}
+      <Modal
+        show={showHorariosModal}
+        onHide={fecharModalHorarios}
+        centered
+        backdrop="static"
+        keyboard={false}
+        size="lg"
+        dialogClassName="horarios-modal-dialog"
+      >
+        <Modal.Header>
+          <Modal.Title>
+            📅 Horários - {maquinaSelecionada?.nome}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="horarios-modal-body">
+          <div className="date-selector">
+            <label htmlFor="datePicker">Data:</label>
+            <input
+              type="date"
+              id="datePicker"
+              className="date-input"
+              value={dataSelecionada}
+              onChange={handleDataChange}
+            />
+          </div>
+
+          <div className="horarios-stats">
+            <div className="stat-item">
+              <span className="stat-label">Total de Horários:</span>
+              <span className="stat-value">{gerarHorariosDisponiveis().length}</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-label">Reservados:</span>
+              <span className="stat-value reservado-count">{reservasDosDia.length}</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-label">Disponíveis:</span>
+              <span className="stat-value livre-count">
+                {gerarHorariosDisponiveis().length - reservasDosDia.length}
+              </span>
+            </div>
+          </div>
+
+          {loadingReservas ? (
+            <div className="loading-horarios">
+              <div className="spinner"></div>
+              <p>Carregando horários...</p>
+            </div>
+          ) : (
+            <div className="horarios-grid">
+              {gerarHorariosDisponiveis().map((horario) => {
+                const reserva = verificarHorarioReservado(horario);
+                const isReservado = !!reserva;
+                
+                return (
+                  <div 
+                    key={horario} 
+                    className={`horario-slot ${isReservado ? 'reservado' : 'livre'}`}
+                  >
+                    <div className="horario-time">
+                      <span className="time-icon">⏰</span>
+                      <span className="time-text">{horario}</span>
+                    </div>
+                    
+                    {isReservado ? (
+                      <div className="horario-info">
+                        <span className="status-badge reservado-badge">
+                          🔴 Reservado
+                        </span>
+                        <span className="cliente-info">
+                          👤 {reserva.usuario?.nome || 'Cliente'}
+                        </span>
+                        <button
+                          className="liberar-reserva-btn"
+                          onClick={() => liberarReserva(reserva.id)}
+                          title="Liberar este horário"
+                        >
+                          🔓 Liberar
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="horario-info">
+                        <span className="status-badge livre-badge">
+                          🟢 Livre
+                        </span>
+                        <span className="disponivel-text">
+                          Sem reservas
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="horarios-legenda">
+            <h5>Status Atual da Máquina:</h5>
+            <div className="status-atual">
+              <span className={`status-indicator ${maquinaSelecionada?.status}`}>
+                {maquinaSelecionada?.status === 'disponivel' && '🟢 Disponível'}
+                {maquinaSelecionada?.status === 'em_uso' && '🔴 Em Uso'}
+                {maquinaSelecionada?.status === 'manutencao' && '🟡 Manutenção'}
+              </span>
+            </div>
+            <p className="nota-info">
+              💡 <strong>Dica:</strong> Use o dropdown na lista de máquinas para alterar 
+              o status geral. As reservas acima são específicas por horário.
+            </p>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={fecharModalHorarios}>
+            Fechar
           </Button>
         </Modal.Footer>
       </Modal>
